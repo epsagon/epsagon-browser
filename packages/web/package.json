@@ -68,7 +68,8 @@
     "@opentelemetry/instrumentation-user-interaction": "^0.16.0",
     "@opentelemetry/instrumentation-xml-http-request": "^0.20.0",
     "@opentelemetry/tracing": "^0.20.0",
-    "@opentelemetry/web": "^0.20.0"
+    "@opentelemetry/web": "^0.20.0",
+    "ua-parser-js": "^0.7.28"
   },
   "devDependencies": {
     "@babel/plugin-proposal-class-properties": "^7.13.0",
@@ -80,11 +81,11 @@
     "@babel/runtime": "^7.14.0",
     "babel-eslint": "^10.0.3",
     "cross-env": "^7.0.2",
-    "eslint": "^6.8.0",
+    "eslint-config-airbnb-base": "^14.2.1",
     "eslint-config-prettier": "^6.7.0",
     "eslint-config-standard": "^14.1.0",
     "eslint-config-standard-react": "^9.2.0",
-    "eslint-plugin-import": "^2.18.2",
+    "eslint-plugin-import": "^2.23.4",
     "eslint-plugin-node": "^11.0.0",
     "eslint-plugin-prettier": "^3.1.1",
     "eslint-plugin-promise": "^4.2.1",

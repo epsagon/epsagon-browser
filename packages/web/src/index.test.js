@@ -1,7 +1,9 @@
-import { ExampleComponent } from '.'
+import { init } from './web-tracer'
 
-describe('ExampleComponent', () => {
-  it('is truthy', () => {
-    expect(ExampleComponent).toBeTruthy()
+describe('Sanity test', () => {
+
+  it('init function exists', () => {
+    console.log(init)
+    expect(typeof init === 'function').toEqual(true);
   })
 })
