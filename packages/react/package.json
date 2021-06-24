@@ -1,0 +1,109 @@
+{
+  "name": "@epsagon/react",
+  "version": "0.0.0-development",
+  "description": "This package provides tracing to React web applications for the collection of distributed tracing and performance metrics.",
+  "author": "Epsagon Team <support@epsagon.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/epsagon/epsagon-browser.git"
+  },
+  "keywords": [
+    "browser tracing",
+    "epsagon",
+    "react",
+    "tracing",
+    "distributed-tracing",
+    "real user monitoring",
+    "client side monitoring",
+    "debugging",
+    "monitoring"
+  ],
+  "main": "dist/index.js",
+  "module": "dist/index.modern.js",
+  "source": "src/index.js",
+  "engines": {
+    "node": ">=10"
+  },
+  "babel": {
+    "presets": [
+      [
+        "@babel/preset-env",
+        {
+          "targets": {
+            "esmodules": true
+          }
+        }
+      ],
+      "@babel/preset-react",
+      "@babel/preset-flow"
+    ],
+    "plugins": [
+      "@babel/plugin-proposal-class-properties"
+    ]
+  },
+  "scripts": {
+    "build": "microbundle-crl --no-compress --format modern,cjs",
+    "start": "microbundle-crl watch --no-compress --format modern,cjs",
+    "prepare": "run-s build",
+    "test": "run-s test:unit test:lint test:build",
+    "test:build": "run-s build",
+    "test:lint": "eslint .",
+    "test:unit": "cross-env CI=1 react-scripts test --env=jsdom",
+    "test:watch": "react-scripts test --env=jsdom",
+    "predeploy": "cd example && npm install && npm run build",
+    "deploy": "gh-pages -d example/build",
+    "semantic-release": "semantic-release"
+  },
+  "peerDependencies": {
+    "react": "^16.0.0"
+  },
+  "dependencies": {
+    "@epsagon/web": "^1.0.1",
+    "@opentelemetry/plugin-react-load": "^0.16.0"
+  },
+  "devDependencies": {
+    "@babel/plugin-proposal-class-properties": "^7.13.0",
+    "@babel/plugin-syntax-dynamic-import": "^7.8.3",
+    "@babel/plugin-transform-react-jsx": "^7.14.3",
+    "@babel/preset-env": "^7.14.4",
+    "@babel/preset-flow": "^7.13.13",
+    "@babel/preset-react": "^7.13.13",
+    "@babel/runtime": "^7.14.0",
+    "babel-eslint": "^10.0.3",
+    "cross-env": "^7.0.2",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-config-prettier": "^6.7.0",
+    "eslint-config-standard": "^14.1.0",
+    "eslint-config-standard-react": "^9.2.0",
+    "eslint-plugin-import": "^2.23.4",
+    "eslint-plugin-node": "^11.0.0",
+    "eslint-plugin-prettier": "^3.1.1",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-react": "^7.17.0",
+    "eslint-plugin-standard": "^4.0.1",
+    "gh-pages": "^2.2.0",
+    "microbundle-crl": "^0.13.10",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^2.0.4",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "react-scripts": "^3.4.1",
+    "semantic-release": "^17.4.4"
+  },
+  "release": {
+    "branches": [
+      "main"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "bugs": {
+    "url": "https://github.com/epsagon/epsagon-browser/issues"
+  },
+  "homepage": "https://github.com/epsagon/epsagon-browser#readme",
+  "files": [
+    "dist"
+  ]
+}
