@@ -58,8 +58,7 @@
     "@opentelemetry/instrumentation-user-interaction": "^0.16.0",
     "@opentelemetry/instrumentation-xml-http-request": "^0.20.0",
     "@opentelemetry/tracing": "^0.20.0",
-    "@opentelemetry/web": "^0.20.0",
-    "semantic-release": "^17.4.4"
+    "@opentelemetry/web": "^0.20.0"
   },
   "devDependencies": {
     "@babel/plugin-proposal-class-properties": "^7.13.0",
@@ -87,7 +86,13 @@
     "prettier": "^2.0.4",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
-    "react-scripts": "^4.0.3"
+    "react-scripts": "^4.0.3",
+    "semantic-release": "^17.4.4"
+  },
+  "release": {
+    "branches": [
+      "main"
+    ]
   },
   "files": [
     "dist"
