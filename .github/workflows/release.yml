@@ -16,12 +16,14 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 12
-      - name: web
-        run: cd packages/web
       - name: Install dependencies
-        run: npm run build
+        run: |
+          cd packages/web
+          npm run build
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npx semantic-release
+        run: |
+          cd packages/web
+          npx semantic-release
