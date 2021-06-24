@@ -17,13 +17,11 @@ jobs:
         with:
           node-version: 12
       - name: Install dependencies
-        run: |
-          cd packages/web
-          npm run build
+        working-directory: ./packages/web
+        run: npm run build
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: |
-          cd packages/web
-          npx semantic-release
+        working-directory: ./packages/web
+        run: npx semantic-release
