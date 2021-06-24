@@ -41,7 +41,8 @@
     "test:unit": "cross-env CI=1 react-scripts test --env=jsdom",
     "test:watch": "react-scripts test --env=jsdom",
     "predeploy": "cd example && npm install && npm run build",
-    "deploy": "gh-pages -d example/build"
+    "deploy": "gh-pages -d example/build",
+    "semantic-release": "semantic-release"
   },
   "peerDependencies": {
     "react": "^16.0.0"
@@ -57,7 +58,8 @@
     "@opentelemetry/instrumentation-user-interaction": "^0.16.0",
     "@opentelemetry/instrumentation-xml-http-request": "^0.20.0",
     "@opentelemetry/tracing": "^0.20.0",
-    "@opentelemetry/web": "^0.20.0"
+    "@opentelemetry/web": "^0.20.0",
+    "semantic-release": "^17.4.4"
   },
   "devDependencies": {
     "@babel/plugin-proposal-class-properties": "^7.13.0",
