@@ -62,7 +62,9 @@ class EpsagonFetchInstrumentation extends FetchInstrumentation {
                                             resHeaders.push(entry);
                                         }
                                         span.setAttribute('http.response.body', (await resClone2.text()).substring(0, 5000));
-                                        span.setAttribute('http.response.headers', JSON.stringify(resHeaders));
+                                        if(resHeaders.length > 0){
+                                            span.setAttribute('http.response.headers', JSON.stringify(resHeaders));
+                                        }
                                         endSpanOnSuccess(span, response);
                                     }
                                     else {                              

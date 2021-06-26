@@ -42,12 +42,14 @@ class EpsagonXMLHttpRequestInstrumentation extends XMLHttpRequestInstrumentation
             responseBody = typeof responseBody !== "string" ? JSON.stringify(responseBody): responseBody
             span.setAttribute('http.response.body', responseBody.substring(0, 5000));
             let resHeadersArr = xhrMem.xhrInstance.getAllResponseHeaders().split('\r\n');
-            let headersObj = resHeadersArr.reduce(function (acc, current, i){
-                var parts = current.split(': ');
-                acc[parts[0]] = parts[1];
-                return acc;
-            }, {});
-            span.setAttribute('http.response.headers', `${JSON.stringify(headersObj)}`);
+            if(resHeadersArr.length > 0){
+                let headersObj = resHeadersArr.reduce(function (acc, current, i){
+                    var parts = current.split(': ');
+                    acc[parts[0]] = parts[1];
+                    return acc;
+                }, {});
+                span.setAttribute('http.response.headers', `${JSON.stringify(headersObj)}`);
+            }
             span.setAttribute('http.response_content_length', xhrMem.xhrInstance.getResponseHeader('content-length'))
             span.setAttribute('http.request.body', xhrMem.xhrInstance.__zone_symbol__xhrTask.data.args[0])
         }
