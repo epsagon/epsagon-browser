@@ -47,10 +47,6 @@ class EpsagonSpan {
 //to pass into the init - app_name: str, token: str
 function init (configData) {
 
-  if(!configData.app_name){
-    configData.app_name = 'epsagon trace';
-  } 
-
   if(!configData.token){
     console.log('Epsagon token must be passed into initialization')
     return
