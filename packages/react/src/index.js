@@ -1,5 +1,5 @@
 import { init } from './web-tracer';
 
-const Epsagon = { init }
+const Epsagon = { init };
 
-export default Epsagon
+export default Epsagon;

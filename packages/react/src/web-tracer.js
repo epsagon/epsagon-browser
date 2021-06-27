@@ -1,17 +1,16 @@
 import ReactRedirectInstrumentation from './instrumentation/redirectInstrumentation';
-const Epsagon = require('@epsagon/web')
 
+const Epsagon = require('@epsagon/web');
 
-//to pass into the init - app_name: str, token: str
-function init (configData) {
+// to pass into the init - app_name: str, token: str
+function init(configData) {
+  const { tracer, epsSpan } = Epsagon.init(configData);
 
-  let { tracer, epsSpan } = Epsagon.init(configData);
-
-  if(configData.history){
-    ReactRedirectInstrumentation(configData.history, tracer, epsSpan)
+  if (configData.history) {
+    ReactRedirectInstrumentation(configData.history, tracer, epsSpan);
   }
 
   return tracer;
 }
 
-export { init }
+export { init };

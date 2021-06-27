@@ -1,90 +1,90 @@
 import { DocumentLoadInstrumentation } from '@opentelemetry/instrumentation-document-load';
-const api = require("@opentelemetry/api");
+
+const api = require('@opentelemetry/api');
+
 class EpsagonDocumentLoadInstrumentation extends DocumentLoadInstrumentation {
-    
-    constructor(parentSpan){
-        super()
-        this.epsParentSpan = parentSpan;
-    }
+  constructor(parentSpan) {
+    super();
+    this.epsParentSpan = parentSpan;
+  }
 
-    _onDocumentLoaded(event = false) {
-        // Timeout is needed as load event doesn't have yet the performance metrics for loadEnd.
-        // Support for event "loadend" is very limited and cannot be used
-        window.setTimeout(() => {
-            if(event.error || event.reason){
-                this.reportError(event)
-            }else{
-                this._collectPerformance();
-            }
+  _onDocumentLoaded(event = false) {
+    // Timeout is needed as load event doesn't have yet the performance metrics for loadEnd.
+    // Support for event "loadend" is very limited and cannot be used
+    window.setTimeout(() => {
+      if (event.error || event.reason) {
+        this.reportError(event);
+      } else {
+        this._collectPerformance();
+      }
+    });
+  }
 
-        });
+  _startSpan(spanName, performanceName, entries, parentSpan) {
+    // drop document fetch events
+    if (spanName == 'documentFetch') {
+      return undefined;
     }
+    const initialSpan = super._startSpan(spanName, performanceName, entries, this.epsParentSpan.currentSpan);
+    if (initialSpan && !this.epsParentSpan.currentSpan) {
+      this.epsParentSpan.currentSpan = initialSpan;
+    }
+    return initialSpan;
+  }
 
-    _startSpan(spanName, performanceName, entries, parentSpan){ 
-        //drop document fetch events
-        if(spanName == "documentFetch"){
-            return undefined
-        }
-        let initialSpan = super._startSpan(spanName, performanceName, entries, this.epsParentSpan.currentSpan);
-        if(initialSpan && !this.epsParentSpan.currentSpan){
-            this.epsParentSpan.currentSpan = initialSpan;
-        }
-        return initialSpan;
-    }
+  // drop resource fetch spans
+  _initResourceSpan(resource, parentSpan) {
+  }
 
-    //drop resource fetch spans
-    _initResourceSpan(resource, parentSpan) {
+  reportError(event) {
+    let error;
+    event.error ? error = event.error : error = event.reason;
+    if (error.message && error.message.includes('Failed to export with XHR (status: 502)') || error && error.includes('Failed to export with XHR (status: 502)')) {
+      return;
     }
+    const span = this.tracer.startSpan('error', {
+      attributes: {
+        message: error.message || error,
+        type: 'browser',
+        operation: 'page_load',
+        // "stack": stack
+      },
+    }, this.epsParentSpan.currentSpan ? api.trace.setSpan(api.context.active(), this.epsParentSpan.currentSpan) : undefined);
+    span.setStatus({ code: 2 });
+    span.end();
+  }
 
-    reportError(event){
-        let error;
-        event.error ? error = event.error : error = event.reason
-        if(error.message && error.message.includes('Failed to export with XHR (status: 502)') || error && error.includes('Failed to export with XHR (status: 502)')){
-            return
-        }
-        let span = this.tracer.startSpan('error', {
-            attributes: {
-                "message": error.message || error,
-                "type": "browser",
-                "operation": "page_load"
-                // "stack": stack
-            }, 
-        }, this.epsParentSpan.currentSpan ? api.trace.setSpan(api.context.active(), this.epsParentSpan.currentSpan) : undefined);
-        span.setStatus({code: 2})
-        span.end()
+  _waitForPageLoad() {
+    if (window.document.readyState === 'complete') {
+      this._onDocumentLoaded();
+    } else {
+      this._onDocumentLoaded = this._onDocumentLoaded.bind(this);
+      window.addEventListener('load', this._onDocumentLoaded);
+      window.addEventListener('error', this._onDocumentLoaded);
+      window.addEventListener('unhandledrejection', this._onDocumentLoaded);
+      window.addEventListener('rejectionhandled', this._onDocumentLoaded);
     }
+  }
 
-    _waitForPageLoad() {
-        if (window.document.readyState === 'complete') {
-            this._onDocumentLoaded();
-        }
-        else {
-            this._onDocumentLoaded = this._onDocumentLoaded.bind(this);
-            window.addEventListener('load', this._onDocumentLoaded);
-            window.addEventListener('error', this._onDocumentLoaded);
-            window.addEventListener("unhandledrejection", this._onDocumentLoaded);
-            window.addEventListener("rejectionhandled", this._onDocumentLoaded);
-        }
-    }
+  enable() {
+    // remove previously attached load to avoid adding the same event twice
+    // in case of multiple enable calling.
+    window.removeEventListener('load', this._onDocumentLoaded);
+    window.removeEventListener('error', this._onDocumentLoaded);
+    window.removeEventListener('unhandledrejection', this._onDocumentLoaded);
+    window.removeEventListener('rejectionhandled', this._onDocumentLoaded);
+    this._waitForPageLoad();
+  }
 
-    enable() {
-        // remove previously attached load to avoid adding the same event twice
-        // in case of multiple enable calling.
-        window.removeEventListener('load', this._onDocumentLoaded);
-        window.removeEventListener('error', this._onDocumentLoaded);
-        window.removeEventListener("unhandledrejection", this._onDocumentLoaded);
-        window.removeEventListener("rejectionhandled", this._onDocumentLoaded);
-        this._waitForPageLoad();
-    }
-    /**
+  /**
      * implements disable function
      */
-    disable() {
-        super.disable()
-        window.removeEventListener('error', this._onDocumentLoaded);
-        window.removeEventListener("unhandledrejection", this._onDocumentLoaded);
-        window.removeEventListener("rejectionhandled", this._onDocumentLoaded);
-    }
+  disable() {
+    super.disable();
+    window.removeEventListener('error', this._onDocumentLoaded);
+    window.removeEventListener('unhandledrejection', this._onDocumentLoaded);
+    window.removeEventListener('rejectionhandled', this._onDocumentLoaded);
+  }
 }
 
 export default EpsagonDocumentLoadInstrumentation;

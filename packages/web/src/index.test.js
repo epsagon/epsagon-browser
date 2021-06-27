@@ -1,9 +1,8 @@
-import { init } from './web-tracer'
+import { init } from './web-tracer';
 
 describe('Sanity test', () => {
-
   it('init function exists', () => {
-    console.log(init)
+    console.log(init);
     expect(typeof init === 'function').toEqual(true);
-  })
-})
+  });
+});
