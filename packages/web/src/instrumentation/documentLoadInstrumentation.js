@@ -36,10 +36,20 @@ class EpsagonDocumentLoadInstrumentation extends DocumentLoadInstrumentation {
   _initResourceSpan(resource, parentSpan) {
   }
 
+  _includes(obj, str) {
+    if (!obj) {
+        return false;
+    }
+    if (typeof obj === 'string' || obj instanceof Array) {
+        return obj.indexOf(str) !== -1    
+    }
+    return false;
+  }
+
   reportError(event) {
     let error;
     event.error ? error = event.error : error = event.reason;
-    if (error.message && error.message.includes('Failed to export with XHR (status: 502)') || error && error.includes('Failed to export with XHR (status: 502)')) {
+    if(error && (_includes(error.message, 'Failed to export with XHR (status: 502)')) || _includes(error, 'Failed to export with XHR (status: 502)')){
       return;
     }
     const span = this.tracer.startSpan('error', {
