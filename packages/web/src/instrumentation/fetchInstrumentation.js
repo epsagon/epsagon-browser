@@ -5,8 +5,8 @@ const core = require('@opentelemetry/core');
 const semantic_conventions_1 = require('@opentelemetry/semantic-conventions');
 
 class EpsagonFetchInstrumentation extends FetchInstrumentation {
-  constructor(parentSpan) {
-    super();
+  constructor(config, parentSpan){
+    super(config);
     this.epsParentSpan = parentSpan;
   }
 

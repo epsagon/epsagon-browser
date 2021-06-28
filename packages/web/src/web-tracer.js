@@ -88,7 +88,9 @@ function init (configData) {
     tracerProvider: provider,
     instrumentations: [
       new EpsagonDocumentLoadInstrumentation(epsSpan),
-      new EpsagonFetchInstrumentation(epsSpan),
+      new EpsagonFetchInstrumentation({      
+        propagateTraceHeaderCorsUrls: /.+/,
+      }, epsSpan),      
       new EpsagonXMLHttpRequestInstrumentation({      
           propagateTraceHeaderCorsUrls: /.+/,
         }, epsSpan)
