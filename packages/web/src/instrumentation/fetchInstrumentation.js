@@ -5,9 +5,10 @@ const core = require('@opentelemetry/core');
 const semantic_conventions_1 = require('@opentelemetry/semantic-conventions');
 
 class EpsagonFetchInstrumentation extends FetchInstrumentation {
-  constructor(parentSpan) {
+  constructor(parentSpan, options) {
     super();
     this.epsParentSpan = parentSpan;
+    this.globalOptions = options;
   }
 
   // has to be overridden in order to grab response obj before the stream is read and no longer useable
@@ -17,7 +18,7 @@ class EpsagonFetchInstrumentation extends FetchInstrumentation {
       return function patchConstructor(input, init) {
         const url = input instanceof Request ? input.url : input;
         const options = input instanceof Request ? input : init || {};
-        const createdSpan = plugin._createSpan(url, options);
+        const createdSpan = plugin._createSpan(url, options, this.globalOptions);
         if (!createdSpan) {
           return original.apply(this, [url, options]);
         }
@@ -99,7 +100,7 @@ class EpsagonFetchInstrumentation extends FetchInstrumentation {
   }
 
   // create span copied over so parent span can be added at creation, additional attributes also added here
-  _createSpan(url, options = {}) {
+  _createSpan(url, options = {}, globalOptions) {
     if (core.isUrlIgnored(url, this._getConfig().ignoreUrls)) {
       api.diag.debug('ignoring span as url matches ignored url');
       return;
@@ -107,16 +108,30 @@ class EpsagonFetchInstrumentation extends FetchInstrumentation {
     const method = (options.method || 'GET').toUpperCase();
     const spanName = `HTTP ${method}`;
 
-    return this.tracer.startSpan(spanName, {
-      kind: api.SpanKind.CLIENT,
-      attributes: {
-        component: this.moduleName,
-        [semantic_conventions_1.SemanticAttributes.HTTP_METHOD]: method,
-        [semantic_conventions_1.SemanticAttributes.HTTP_URL]: url,
-        'http.request.headers': JSON.stringify(options.headers),
-        'http.request.body': options.body,
-      },
-    }, this.epsParentSpan.currentSpan ? api.trace.setSpan(api.context.active(), this.epsParentSpan.currentSpan) : undefined);
+    let span;
+    if (globalOptions.metadataOnly) {
+      span = {
+        kind: api.SpanKind.CLIENT,
+        attributes: {
+          component: this.moduleName,
+          [semantic_conventions_1.SemanticAttributes.HTTP_METHOD]: method,
+          [semantic_conventions_1.SemanticAttributes.HTTP_URL]: url,
+        },
+      }
+    }
+    else {
+      span = {
+        kind: api.SpanKind.CLIENT,
+        attributes: {
+          component: this.moduleName,
+          [semantic_conventions_1.SemanticAttributes.HTTP_METHOD]: method,
+          [semantic_conventions_1.SemanticAttributes.HTTP_URL]: url,
+          'http.request.headers': JSON.stringify(options.headers),
+          'http.request.body': options.body,
+        },
+      }
+    }
+    return this.tracer.startSpan(spanName, span, this.epsParentSpan.currentSpan ? api.trace.setSpan(api.context.active(), this.epsParentSpan.currentSpan) : undefined);
   }
 }
 

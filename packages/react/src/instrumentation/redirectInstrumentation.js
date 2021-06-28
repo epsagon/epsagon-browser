@@ -1,3 +1,6 @@
+/* eslint max-len: ["error", { "ignoreComments": true }] */
+
+/* eslint no-param-reassign: ["error", { "props": true, "ignorePropertyModificationsFor": ["parentSpan"] }] */
 function ReactRedirectInstrumentation(history, tracer, parentSpan) {
   const getInitPathName = () => {
     if (history && history.location) {

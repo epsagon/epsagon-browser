@@ -13,7 +13,7 @@ class EpsagonSpan {
 
   timeout = 30000
 
-  constructor(tracer){
+  constructor(tracer) {
     let span = tracer.startSpan('epsagon_init', {
       attributes: {
         "operation": "page_load",
@@ -26,7 +26,7 @@ class EpsagonSpan {
     this._time = Date.now()
   }
 
-  get currentSpan(){
+  get currentSpan() {
     if(this._time != null && this._time + this.timeout >= Date.now()){
       return this._currentSpan
     }else {
@@ -44,21 +44,28 @@ class EpsagonSpan {
   }
 }
 
+let _configData;
+
 //to pass into the init - app_name: str, token: str
 function init (configData) {
-
-  if(!configData.token){
+  _configData = configData;
+  if (!configData.token) {
     console.log('Epsagon token must be passed into initialization')
     return
   }
 
-  if(!configData.url){
+  if (configData.isEpsagonDisabled) {
+    return;
+  }
+
+  if (!configData.url) {
     configData.url = 'https://opentelemetry.tc.epsagon.com/traces';
   }
 
   const collectorOptions = {
     serviceName: configData.app_name,
     url: configData.url,
+    hosts: configData.hosts,
     headers: {
       "X-Epsagon-Token": `${configData.token}`,
     },
@@ -81,7 +88,7 @@ function init (configData) {
     }) 
   });
 
-  const tracer = provider.getTracer(configData.app_name);  
+  const tracer = provider.getTracer(configData.app_name);
   let epsSpan = new EpsagonSpan(tracer);
 
   registerInstrumentations({
@@ -95,7 +102,12 @@ function init (configData) {
     ],
   });
 
-  return { tracer, epsSpan};
+  return { tracer, epsSpan };
 }
 
-export { init }
+function tag (key, value) {
+  const tracer = provider.getTracer(_configData.app_name);
+  // tracer.
+}
+
+export { init, tag }
