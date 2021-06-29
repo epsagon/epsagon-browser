@@ -5,9 +5,10 @@ const core_1 = require('@opentelemetry/core');
 const semantic_conventions_1 = require('@opentelemetry/semantic-conventions');
 
 class EpsagonXMLHttpRequestInstrumentation extends XMLHttpRequestInstrumentation {
-  constructor(config, parentSpan) {
+  constructor(config, parentSpan, options) {
     super(config);
     this.epsParentSpan = parentSpan;
+    this.globalOptions = options;
   }
 
   // create span copied over so parent span can be added at creation
@@ -37,7 +38,7 @@ class EpsagonXMLHttpRequestInstrumentation extends XMLHttpRequestInstrumentation
     super._addFinalSpanAttributes(span, xhrMem, spanUrl);
     let responseBody = xhrMem.xhrInstance.response;
 
-    if (typeof spanUrl === 'string') {
+    if (typeof spanUrl === 'string' && !this.globalOptions.metadataOnly) {
       responseBody = typeof responseBody !== 'string' ? JSON.stringify(responseBody) : responseBody;
       span.setAttribute('http.response.body', responseBody.substring(0, 5000));
       const resHeadersArr = xhrMem.xhrInstance.getAllResponseHeaders().split('\r\n');
