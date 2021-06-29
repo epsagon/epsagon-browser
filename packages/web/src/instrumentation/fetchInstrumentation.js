@@ -18,7 +18,7 @@ class EpsagonFetchInstrumentation extends FetchInstrumentation {
       return function patchConstructor(input, init) {
         const url = input instanceof Request ? input.url : input;
         const options = input instanceof Request ? input : init || {};
-        const createdSpan = plugin._createSpan(url, options, this.globalOptions);
+        const createdSpan = plugin._createSpan(url, options, plugin.globalOptions);
         if (!createdSpan) {
           return original.apply(this, [url, options]);
         }
@@ -53,16 +53,18 @@ class EpsagonFetchInstrumentation extends FetchInstrumentation {
               const read = () => {
                 reader.read().then(async ({ done }) => {
                   if (done) {
-                    const resHeaders = [];
-                    for (const entry of resClone2.headers.entries()) {
-                      if (entry[0] === 'content-length') {
-                        span.setAttribute('http.response_content_length_eps', parseInt(entry[1]));
+                    if(!plugin.globalOptions.metadataOnly){
+                      const resHeaders = [];
+                      for (const entry of resClone2.headers.entries()) {
+                        if (entry[0] === 'content-length') {
+                          span.setAttribute('http.response_content_length_eps', parseInt(entry[1]));
+                        }
+                        resHeaders.push(entry);
                       }
-                      resHeaders.push(entry);
-                    }
-                    span.setAttribute('http.response.body', (await resClone2.text()).substring(0, 5000));
-                    if (resHeaders.length > 0) {
-                      span.setAttribute('http.response.headers', JSON.stringify(resHeaders));
+                      span.setAttribute('http.response.body', (await resClone2.text()).substring(0, 5000));
+                      if (resHeaders.length > 0) {
+                        span.setAttribute('http.response.headers', JSON.stringify(resHeaders));
+                      }
                     }
                     endSpanOnSuccess(span, response);
                   } else {

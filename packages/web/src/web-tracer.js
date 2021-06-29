@@ -46,7 +46,7 @@ class EpsagonSpan {
 
 let _configData;
 
-//to pass into the init - app_name: str, token: str, whitelist: arr, isEpsagonDisabled: bool
+//to pass into the init - app_name: str, token: str, whitelist: arr, isEpsagonDisabled: bool, metadataOnly
 function init (configData) {
   _configData = configData;
   if (!configData.token) {
@@ -69,6 +69,7 @@ function init (configData) {
     headers: {
       "X-Epsagon-Token": `${configData.token}`,
     },
+    metadataOnly: configData.metadataOnly
   };
 
   const provider = new WebTracerProvider();
@@ -106,10 +107,10 @@ function init (configData) {
     tracerProvider: provider,
     instrumentations: [
       new EpsagonDocumentLoadInstrumentation(epsSpan),
-      new EpsagonFetchInstrumentation(epsSpan),
+      new EpsagonFetchInstrumentation(epsSpan, {metadataOnly: configData.metadataOnly}),
       new EpsagonXMLHttpRequestInstrumentation({      
           propagateTraceHeaderCorsUrls: whiteListedURLsRegex,
-        }, epsSpan)
+        }, epsSpan, {metadataOnly: configData.metadataOnly})
     ],
   });
 
