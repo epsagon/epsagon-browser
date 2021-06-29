@@ -46,7 +46,7 @@ class EpsagonSpan {
 
 let _configData;
 
-//to pass into the init - app_name: str, token: str
+//to pass into the init - app_name: str, token: str, whitelist: arr, isEpsagonDisabled: bool
 function init (configData) {
   _configData = configData;
   if (!configData.token) {
@@ -91,13 +91,24 @@ function init (configData) {
   const tracer = provider.getTracer(configData.app_name);
   let epsSpan = new EpsagonSpan(tracer);
 
+  let whiteListedURLsRegex;
+  if(configData.whitelist){
+    let regUrlsString = ''; 
+    configData.whitelist.map((url)=> {
+      regUrlsString += `${url}|`
+    })
+    whiteListedURLsRegex = new RegExp(regUrlsString.slice(0, -1), "i")
+  }else{
+    whiteListedURLsRegex = /.+/
+  }
+
   registerInstrumentations({
     tracerProvider: provider,
     instrumentations: [
       new EpsagonDocumentLoadInstrumentation(epsSpan),
       new EpsagonFetchInstrumentation(epsSpan),
       new EpsagonXMLHttpRequestInstrumentation({      
-          propagateTraceHeaderCorsUrls: /.+/,
+          propagateTraceHeaderCorsUrls: whiteListedURLsRegex,
         }, epsSpan)
     ],
   });

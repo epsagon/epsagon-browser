@@ -70,11 +70,6 @@ class EpsagonExporter extends CollectorTraceExporter {
           const reactUpdates = spanAttributes.filter((attr) => attr.key === 'react_component_name');
 
           if (httpHost.length > 0) {
-            // IF USER SET WHITELIST HOSTS - MAKE SURE THIS SPAN HOST IS INCLUDED
-            const host = httpHost[0].value.stringValue
-            if (this.config.hosts && this.config.hosts.length && !this.config.hosts.includes(host)) {
-              break;
-            }
             attributesLength = EpsagonFormatter.formatHttpRequestSpan(span, httpHost, spanAttributes, attributesLength, this.config);
           } else if (userInteraction.length > 0) {
             attributesLength = EpsagonFormatter.formatUserInteractionSpan(spanAttributes, attributesLength);
