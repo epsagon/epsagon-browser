@@ -62,7 +62,8 @@
   },
   "dependencies": {
     "@epsagon/web": "^1.0.1",
-    "@opentelemetry/plugin-react-load": "^0.16.0"
+    "@opentelemetry/plugin-react-load": "^0.16.0",
+    "ua-parser-js": "^0.7.28"
   },
   "devDependencies": {
     "@babel/plugin-proposal-class-properties": "^7.13.0",

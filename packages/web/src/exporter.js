@@ -1,4 +1,5 @@
 import { CollectorTraceExporter } from '@opentelemetry/exporter-collector';
+import EpsagonFormatter from './formatter';
 
 const rootType = {
   EPS: 'epsagon_init',
@@ -10,6 +11,22 @@ class EpsagonExporter extends CollectorTraceExporter {
     super(config);
     this.config = config;
     this.userAgent = ua;
+    this.formatter = new EpsagonFormatter(config)
+
+    // start requesting for ip
+    fetch('https://api.ipify.org?format=json')
+      .then(response => response.json())
+      .then(data => {
+        this.userAgent.browser.ip = data.ip
+        fetch(`http://ip-api.com/json/${data.ip}?fields=16665`)
+          .then(response2 => response2.json())
+          .then(data2 => {
+              this.userAgent.browser.country = data2.country
+              this.userAgent.browser.regionName = data2.regionName
+              this.userAgent.browser.city = data2.city
+              this.userAgent.browser.timezone = data2.timezone
+            });
+      });
   }
 
   convert(spans) {
@@ -38,7 +55,7 @@ class EpsagonExporter extends CollectorTraceExporter {
             rootSpan.eps.position = spanIndex;
             rootSpan.eps.subPosition = spanSubIndex;
             rootSpan.eps.spanId = span.spanId;
-            attributesLength = this.formatDocumentLoadSpan(span, spanAttributes, attributesLength);
+            attributesLength = this.formatter.formatDocumentLoadSpan(span, spanAttributes, attributesLength);
           }
           if (span.name === 'error') {
             if (span.attributes[0]) {
@@ -54,9 +71,9 @@ class EpsagonExporter extends CollectorTraceExporter {
           const reactUpdates = spanAttributes.filter((attr) => attr.key === 'react_component_name');
 
           if (httpHost.length > 0) {
-            attributesLength = this.formatHttpRequestSpan(span, httpHost, spanAttributes, attributesLength);
+            attributesLength = this.formatter.formatHttpRequestSpan(span, httpHost, spanAttributes, attributesLength);
           } else if (userInteraction.length > 0) {
-            attributesLength = this.formatUserInteractionSpan(spanAttributes, attributesLength);
+            attributesLength = this.formatter.formatUserInteractionSpan(spanAttributes, attributesLength);
           } else if (documentLoad.length > 0 || reactUpdates.length > 0) {
             rootSpan.doc.position = spanIndex;
 
@@ -68,10 +85,10 @@ class EpsagonExporter extends CollectorTraceExporter {
               rootSpan.doc.parent = span.parentSpanId;
             }
 
-            attributesLength = this.formatDocumentLoadSpan(span, spanAttributes, attributesLength);
+            attributesLength = this.formatter.formatDocumentLoadSpan(span, spanAttributes, attributesLength);
           } else if (span.name === 'route_change') {
             rootSpan.rootType = rootType.REDIR;
-            attributesLength = this.formatRouteChangeSpan(span, spanAttributes, attributesLength);
+            attributesLength = this.formatter.formatRouteChangeSpan(span, spanAttributes, attributesLength, this.userAgent);
             rootSpan.redirect.position = spanIndex;
             rootSpan.redirect.subPosition = spanSubIndex;
           }
@@ -148,73 +165,14 @@ class EpsagonExporter extends CollectorTraceExporter {
     spanAttributes[attributesLength] = { key: 'browser.host', value: { stringValue: window.location.hostname } };
     attributesLength++;
     spanAttributes[attributesLength] = { key: 'browser.path', value: { stringValue: window.location.pathname } };
-    span.attributes = spanAttributes.filter((attr) => attr.key != 'http.response_content_length_eps');
-    return attributesLength;
-  }
-
-  formatRouteChangeSpan(span, spanAttributes, attributesLength) {
-    span.name = window.location.pathname;
-    spanAttributes[attributesLength] = { key: 'http.request.headers.User-Agent', value: { stringValue: JSON.stringify(this.userAgent).replace(/"([^"]+)":/g, '$1:') } };
-    attributesLength++;
-    return attributesLength;
-  }
-
-  formatDocumentLoadSpan(span, spanAttributes, attributesLength) {
-    span.name = window.location.pathname;
-    spanAttributes[attributesLength] = { key: 'type', value: { stringValue: 'browser' } };
-    attributesLength++;
-    spanAttributes[attributesLength] = { key: 'operation', value: { stringValue: 'page_load' } };
-    attributesLength++;
-    return attributesLength;
-  }
-
-  formatUserInteractionSpan(spanAttributes, attributesLength) {
-    spanAttributes[attributesLength] = { key: 'type', value: { stringValue: 'user-interaction' } };
-    attributesLength++;
-    const eventType = spanAttributes.filter((attr) => attr.key === ('event_type'));
-    spanAttributes[attributesLength] = { key: 'operation', value: { stringValue: eventType[0].value.stringValue } };
-    attributesLength++;
-    return attributesLength;
-  }
-
-  formatHttpRequestSpan(span, httpHost, spanAttributes, attributesLength) {
-    span.name = httpHost[0].value.stringValue;
-    spanAttributes[attributesLength] = { key: 'type', value: { stringValue: 'http' } };
-    attributesLength++;
-
-    const httpContentLength = spanAttributes.filter((attr) => attr.key === 'http.response_content_length');
-    const epsHttpContentLength = spanAttributes.filter((attr) => attr.key === 'http.response_content_length_eps');
-    if (epsHttpContentLength.length > 0) {
-      httpContentLength[0].value.intValue = epsHttpContentLength[0].value.intValue;
-    }
-
-    const httpUrlAttr = spanAttributes.filter((attr) => attr.key === 'http.url');
-    const httpUrl = httpUrlAttr[0].value.stringValue;
-    attributesLength = this.parseURL(httpUrl, span, spanAttributes, attributesLength);
-    return attributesLength;
-  }
-
-  parseURL(httpUrl, span, spanAttributes, attributesLength) {
-    if (httpUrl.indexOf('?') < 0 && httpUrl.indexOf(';') < 0) {
-      const path = httpUrl.substring(httpUrl.indexOf(span.name) + span.name.length);
-      spanAttributes[attributesLength] = { key: 'http.request.path', value: { stringValue: path } };
-      attributesLength++;
-    }
-    if (httpUrl.indexOf('?') > 0) {
-      const path = httpUrl.substring(httpUrl.indexOf(span.name) + span.name.length, httpUrl.indexOf('?'));
-      spanAttributes[attributesLength] = { key: 'http.request.path', value: { stringValue: path } };
-      const query = httpUrl.substring(httpUrl.indexOf('?'));
-      spanAttributes[attributesLength] = { key: 'http.request.query', value: { stringValue: query } };
-      attributesLength++;
-    }
-    if (httpUrl.indexOf(';') > 0) {
-      const path = httpUrl.substring(httpUrl.indexOf(span.name) + span.name.length, httpUrl.indexOf(';'));
-      spanAttributes[attributesLength] = { key: 'http.request.path', value: { stringValue: path } };
-      const params = httpUrl.substring(httpUrl.indexOf(';'));
-      spanAttributes[attributesLength] = { key: 'http.request.path_params', value: { stringValue: params } };
-      attributesLength++;
-    }
-
+    span.attributes = spanAttributes.filter((attr) => {
+      if(this.config.metadataOnly){
+        return attr.key != 'http.response_content_length_eps' && attr.key != 'http.response_content_length'
+      }else{
+        return attr.key != 'http.response_content_length_eps'
+      }
+      
+    });
     return attributesLength;
   }
 
@@ -232,6 +190,35 @@ class EpsagonExporter extends CollectorTraceExporter {
     resourcesLength++;
     convertedSpans.resourceSpans[0].resource.attributes[resourcesLength] = { key: 'browser.operating_system_version', value: { stringValue: this.userAgent.os.version } };
     resourcesLength++;
+
+    //ADD IP IF EXISTS
+    if (this.userAgent.browser.ip) {
+      convertedSpans.resourceSpans[0].resource.attributes[resourcesLength] = { key: 'browser.ip', value: { stringValue: this.userAgent.browser.ip } };
+      resourcesLength++;
+    }
+    //ADD COUNTRY IF EXISTS
+    if (this.userAgent.browser.country) {
+      convertedSpans.resourceSpans[0].resource.attributes[resourcesLength] = { key: 'browser.country', value: { stringValue: this.userAgent.browser.country } };
+      resourcesLength++;
+    }
+
+    //ADD CITY IF EXISTS
+    if (this.userAgent.browser.city) {
+      convertedSpans.resourceSpans[0].resource.attributes[resourcesLength] = { key: 'browser.city', value: { stringValue: this.userAgent.browser.city } };
+      resourcesLength++;
+    }
+
+    //ADD REGION IF EXISTS
+    if (this.userAgent.browser.regionName) {
+      convertedSpans.resourceSpans[0].resource.attributes[resourcesLength] = { key: 'browser.regionName', value: { stringValue: this.userAgent.browser.regionName } };
+      resourcesLength++;
+    }
+
+    //ADD TIMEZONE IF EXISTS
+    if (this.userAgent.browser.timezone) {
+      convertedSpans.resourceSpans[0].resource.attributes[resourcesLength] = { key: 'browser.timezone', value: { stringValue: this.userAgent.browser.timezone } };
+      resourcesLength++;
+    }
 
     // remove undefined service.name attr
     convertedSpans.resourceSpans[0].resource.attributes = convertedSpans.resourceSpans[0].resource.attributes.filter((attr) => attr.key != ['service.name']);
