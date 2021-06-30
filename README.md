@@ -59,6 +59,16 @@ Advanced options can be configured as a parameter to the init() method.
 ### Whitelist
 By default all outgoing requests recieve a traceparent header which allows Epsagon to connect the front end trace to the backend traces. Some external services will not accept a traceparent header on request. If you need to limit the traceparent headers to requests to internal services, pass in an array of the hosts you do want to connect to in the whitelist param in the config.
 
+```javascript
+const Epsagon = require('@epsagon/react')
+
+Epsagon.init({
+	app_name: 'app-name-stage',
+	token: 'epsagon-token',
+  whitelist: ['localhost', 'jsonplaceholder.typicode.com']
+})
+```
+
 ## Getting Help
 
 If you have any issue around using the library or the product, please don't hesitate to:
