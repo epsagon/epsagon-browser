@@ -53,6 +53,7 @@ Advanced options can be configured as a parameter to the init() method.
 |token              |String |-            |Epsagon account token                                                              |
 |app_name            |String |`epsagon trace`|Application name that will be set for traces                                       |
 |metadataOnly       |Boolean|`true`       |Whether to send only the metadata (`true`) or also the payloads (`false`)          |
+|hosts              |Array|-       |An array consisting of a whitelist of domains to log traffic on          |
 
 
 ## Getting Help
