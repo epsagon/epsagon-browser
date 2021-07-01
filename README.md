@@ -53,11 +53,11 @@ Advanced options can be configured as a parameter to the init() method.
 |token              |String |-            |Epsagon account token                                                              |
 |app_name            |String |`epsagon trace`|Application name that will be set for traces                                       |
 |metadataOnly       |Boolean|`true`       |Whether to send only the metadata (`true`) or also the payloads (`false`)          |
-|whitelist       |Array|       |Which outgoing requests to add traceparent headers to. Defaults to all.          |
+|propagateTraceHeaderUrls       |Array|       |Which outgoing requests to add traceparent headers to. Defaults to all.          |
 |isEpsagonDisabled       |Boolean|`false`       |Disables tracing         |
 
-### Whitelist
-By default all outgoing requests recieve a traceparent header which allows Epsagon to connect the front end trace to the backend traces. Some external services will not accept a traceparent header on request. If you need to limit the traceparent headers to requests to internal services, pass in an array of the hosts you do want to connect to in the whitelist param in the config.
+### propagateTraceHeaderUrls
+By default all outgoing requests recieve a traceparent header which allows Epsagon to connect the front end trace to the backend traces. Some external services will not accept a traceparent header on request. If you need to limit the traceparent headers to requests to internal services, pass in an array of the hosts you do want to connect to in the propagateTraceHeaderUrls param in the config.
 
 ```javascript
 const Epsagon = require('@epsagon/react')
@@ -65,7 +65,7 @@ const Epsagon = require('@epsagon/react')
 Epsagon.init({
 	app_name: 'app-name-stage',
 	token: 'epsagon-token',
-  whitelist: ['localhost', 'jsonplaceholder.typicode.com']
+  propagateTraceHeaderUrls: ['localhost', 'jsonplaceholder.typicode.com']
 })
 ```
 
