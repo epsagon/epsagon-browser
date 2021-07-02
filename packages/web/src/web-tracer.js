@@ -46,7 +46,7 @@ class EpsagonSpan {
 
 let _configData;
 
-//to pass into the init - app_name: str, token: str, whitelist: arr, isEpsagonDisabled: bool, metadataOnly
+//to pass into the init - app_name: str, token: str, propagateTraceHeaderUrls: arr, isEpsagonDisabled: bool, metadataOnly
 function init (configData) {
   _configData = configData;
   if (!configData.token) {
@@ -93,9 +93,9 @@ function init (configData) {
   let epsSpan = new EpsagonSpan(tracer);
 
   let whiteListedURLsRegex;
-  if(configData.whitelist){
+  if(configData.propagateTraceHeaderUrls){
     let regUrlsString = ''; 
-    configData.whitelist.map((url)=> {
+    configData.propagateTraceHeaderUrls.map((url)=> {
       regUrlsString += `${url}|`
     })
     whiteListedURLsRegex = new RegExp(regUrlsString.slice(0, -1), "i")
