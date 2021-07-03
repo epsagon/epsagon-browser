@@ -21,19 +21,11 @@ class EpsagonDocumentLoadInstrumentation extends DocumentLoadInstrumentation {
   }
 
   _startSpan(spanName, performanceName, entries, parentSpan) {
-    // drop document fetch events
-    if (spanName == 'documentFetch') {
-      return undefined;
-    }
     const initialSpan = super._startSpan(spanName, performanceName, entries, this.epsParentSpan.currentSpan);
     if (initialSpan && !this.epsParentSpan.currentSpan) {
       this.epsParentSpan.currentSpan = initialSpan;
     }
     return initialSpan;
-  }
-
-  // drop resource fetch spans
-  _initResourceSpan(resource, parentSpan) {
   }
 
   _includes(obj, str) {
