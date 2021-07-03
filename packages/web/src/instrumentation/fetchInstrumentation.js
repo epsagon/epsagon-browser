@@ -18,6 +18,10 @@ class EpsagonFetchInstrumentation extends FetchInstrumentation {
       return function patchConstructor(input, init) {
         const url = input instanceof Request ? input.url : input;
         const options = input instanceof Request ? input : init || {};
+        if(options.eps){
+          //if epsagon request, ignore and dont send through eps param
+          return original.apply(this, [url, {}]);
+        }
         const createdSpan = plugin._createSpan(url, options, plugin.globalOptions);
         if (!createdSpan) {
           return original.apply(this, [url, options]);
