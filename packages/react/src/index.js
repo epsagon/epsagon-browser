@@ -1,5 +1,5 @@
-import { init } from './web-tracer';
+import { init, identify, tag } from './web-tracer';
 
-const Epsagon = { init };
+const Epsagon = { init, identify, tag };
 
 export default Epsagon;
