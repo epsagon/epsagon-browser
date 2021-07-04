@@ -14,11 +14,15 @@ class EpsagonExporter extends CollectorTraceExporter {
     this.formatter = new EpsagonFormatter(config)
 
     // start requesting for ip
-    fetch('https://api.ipify.org?format=json')
+    fetch('https://api.ipify.org?format=json', {
+      eps: true, // added to negate span creation
+      })
       .then(response => response.json())
       .then(data => {
         this.userAgent.browser.ip = data.ip
-        fetch(`http://ip-api.com/json/${data.ip}?fields=16665`)
+        fetch(`http://ip-api.com/json/${data.ip}?fields=16665`, {
+          eps: true, // added to negate span creation
+          })
           .then(response2 => response2.json())
           .then(data2 => {
               this.userAgent.browser.country = data2.country
