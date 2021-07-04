@@ -69,6 +69,31 @@ Epsagon.init({
 })
 ```
 
+## Setting Custom Span Tags
+
+To add additional information to spans there are two methods available. Batch add user identity information with the ```Epsagon.identity``` function, or use the ```Epsagon.tag``` function to add your own custom information.
+
+Options for ```Epsagon.identify``` include { userId, name, email, companyId, companyName }.
+
+```js
+const options = {
+	userId: 'testuser', 
+	email: 'test email',
+	name: 'test name', 
+	companyId: 'company id test', 
+	companyName: 'company name'
+}
+
+Epsagon.identify(options)
+
+```
+
+Custom tags can only be added one at a time by passing a key and value to the tag function.
+
+```js
+Epsagon.tag('tag name', 'tag value')
+```
+
 ## Getting Help
 
 If you have any issue around using the library or the product, please don't hesitate to:

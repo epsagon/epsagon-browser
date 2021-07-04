@@ -9,6 +9,7 @@ const {CompositePropagator, HttpTraceContextPropagator} = require("@opentelemetr
 const parser = require('ua-parser-js');
 const { registerInstrumentations } = require('@opentelemetry/instrumentation');
 
+let epsSpan;
 class EpsagonSpan {
 
   timeout = 30000
@@ -24,6 +25,8 @@ class EpsagonSpan {
     span.end();
     this._currentSpan = span
     this._time = Date.now()
+    this.identifyFields = null;
+    this.tags = {};
   }
 
   get currentSpan() {
@@ -41,6 +44,24 @@ class EpsagonSpan {
       this._currentSpan = span
       this._time = Date.now()
     }
+  }
+}
+
+function identify(options){
+  if(epsSpan){
+    epsSpan.identifyFields = {
+      userId: options.userId, 
+      name: options.name, 
+      email: options.email, 
+      companyId: options.companyId, 
+      companyName: options.companyName
+    }
+  }
+}
+
+function tag(key, value){
+  if(epsSpan){
+    epsSpan.tags[key] = value
   }
 }
 
@@ -90,7 +111,7 @@ function init (configData) {
   });
 
   const tracer = provider.getTracer(configData.app_name);
-  let epsSpan = new EpsagonSpan(tracer);
+  epsSpan = new EpsagonSpan(tracer);
 
   let whiteListedURLsRegex;
   if(configData.propagateTraceHeaderUrls){
@@ -119,9 +140,5 @@ function init (configData) {
   return { tracer, epsSpan };
 }
 
-function tag (key, value) {
-  const tracer = provider.getTracer(_configData.app_name);
-  // tracer.
-}
 
-export { init, tag }
+export { init, identify, tag }
