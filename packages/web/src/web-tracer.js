@@ -10,6 +10,8 @@ const parser = require('ua-parser-js');
 const { registerInstrumentations } = require('@opentelemetry/instrumentation');
 
 let epsSpan;
+const DEFAULT_APP_NAME = 'Epsagon Application'
+
 class EpsagonSpan {
 
   timeout = 30000
@@ -67,25 +69,26 @@ function tag(key, value){
 
 let _configData;
 
-//to pass into the init - app_name: str, token: str, propagateTraceHeaderUrls: arr, isEpsagonDisabled: bool, metadataOnly
 function init (configData) {
   _configData = configData;
+  if (configData.isEpsagonDisabled) {
+    return;
+  }
+
   if (!configData.token) {
     console.log('Epsagon token must be passed into initialization')
     return
   }
 
-  if (configData.isEpsagonDisabled) {
-    return;
+  if (!configData.collectorURL) {
+    configData.collectorURL = 'https://opentelemetry.tc.epsagon.com/traces';
   }
 
-  if (!configData.url) {
-    configData.url = 'https://opentelemetry.tc.epsagon.com/traces';
-  }
+  const appName = configData.appName || DEFAULT_APP_NAME
 
   const collectorOptions = {
-    serviceName: configData.app_name,
-    url: configData.url,
+    serviceName: appName,
+    url: configData.collectorURL,
     hosts: configData.hosts,
     headers: {
       "X-Epsagon-Token": `${configData.token}`,
@@ -110,7 +113,7 @@ function init (configData) {
     }) 
   });
 
-  const tracer = provider.getTracer(configData.app_name);
+  const tracer = provider.getTracer(appName);
   epsSpan = new EpsagonSpan(tracer);
 
   let whiteListedURLsRegex;
