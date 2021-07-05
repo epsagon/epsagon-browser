@@ -10,11 +10,12 @@ class EpsagonDocumentLoadInstrumentation extends DocumentLoadInstrumentation {
 
   addEpsSpanAttrs(span) {
     if(this.epsParentSpan.identifyFields){
-        span.setAttribute('userId', this.epsParentSpan.identifyFields.userId);
-        span.setAttribute('name', this.epsParentSpan.identifyFields.name);
-        span.setAttribute('email', this.epsParentSpan.identifyFields.email);
-        span.setAttribute('companyId', this.epsParentSpan.identifyFields.companyId);
-        span.setAttribute('companyName', this.epsParentSpan.identifyFields.companyName);
+      const { userId, userName, userEmail, companyId, companyName } = this.epsParentSpan.identifyFields;
+      if (userId) span.setAttribute('user.id', userId);
+      if (userName) span.setAttribute('user.name', userName);
+      if (userEmail) span.setAttribute('user.email', userEmail);
+      if (companyId) span.setAttribute('company.id', companyId);
+      if (companyName) span.setAttribute('company.name', companyName);
     }
     if(this.epsParentSpan.tags){
         for(let key in this.epsParentSpan.tags){

@@ -4,11 +4,12 @@
 
 function addEpsSpanAttrs(span, parentSpan) {
   if(parentSpan.identifyFields){
-      span.setAttribute('userId', parentSpan.identifyFields.userId);
-      span.setAttribute('name', parentSpan.identifyFields.name);
-      span.setAttribute('email', parentSpan.identifyFields.email);
-      span.setAttribute('companyId', parentSpan.identifyFields.companyId);
-      span.setAttribute('companyName', parentSpan.identifyFields.companyName);
+      const { userId, userName, userEmail, companyId, companyName } = parentSpan.identifyFields;
+      if (userId) span.setAttribute('user.id', parentSpan.identifyFields.userId);
+      if (userName) span.setAttribute('user.name', parentSpan.identifyFields.name);
+      if (userEmail) span.setAttribute('user.email', parentSpan.identifyFields.email);
+      if (companyId) span.setAttribute('company.id', parentSpan.identifyFields.companyId);
+      if (companyName) span.setAttribute('company.name', parentSpan.identifyFields.companyName);
   }
   if(parentSpan.tags){
       for(let key in parentSpan.tags){
