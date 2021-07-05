@@ -95,6 +95,10 @@ class EpsagonFetchInstrumentation extends FetchInstrumentation {
           plugin._tasksCount++;
           return original
             .apply(this, [url, options])
+            .catch(ex => {
+              console.log(ex)
+              console.log(JSON.stringify(ex))
+            })
             .then(onSuccess.bind(this, createdSpan, resolve), onError.bind(this, createdSpan, reject));
         }));
       };

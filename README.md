@@ -28,7 +28,7 @@ This package provides tracing to front end of web applications for the collectio
 
 To install Epsagon, simply run:
 ```sh
-npm install @epsagon/react
+npm install @epsagon/react --save
 ```
 
 ## Usage
@@ -52,7 +52,7 @@ Advanced options can be configured as a parameter to the init() method.
 |-------------------|-------|-------------|-----------------------------------------------------------------------------------|
 |token              |String |-            |Epsagon account token                                                              |
 |app_name            |String |`epsagon trace`|Application name that will be set for traces                                       |
-|metadataOnly       |Boolean|`true`       |Whether to send only the metadata (`true`) or also the payloads (`false`)          |
+|metadataOnly       |Boolean|`false`       |Whether to send only the metadata (`true`) or also the payloads (`false`)          |
 |hosts              |Array|-       |An array consisting of a whitelist of domains to log traffic on          |
 
 
