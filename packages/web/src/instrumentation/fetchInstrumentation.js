@@ -16,8 +16,10 @@ class EpsagonFetchInstrumentation extends FetchInstrumentation {
     return (original) => {
       const plugin = this;
       return function patchConstructor(input, init) {
+        console.log(`input: ${input}, init: ${init} `)
         const url = input instanceof Request ? input.url : input;
         const options = input instanceof Request ? input : init || {};
+        console.log(`url: ${url}, options: ${options} `)
         if(options.eps){
           //if epsagon request, ignore and dont send through eps param
           return original.apply(this, [url, {}]);
@@ -95,7 +97,9 @@ class EpsagonFetchInstrumentation extends FetchInstrumentation {
           }
         }
         return new Promise((resolve, reject) => api.context.with(api.trace.setSpan(api.context.active(), createdSpan), () => {
+          console.log(`Before add headers: url: ${url}, options: ${options} `)
           plugin._addHeaders(options, url);
+          console.log(`After add headers: url: ${url}, options: ${options} `)
           plugin._tasksCount++;
           return original
             .apply(this, [url, options])
@@ -113,6 +117,7 @@ class EpsagonFetchInstrumentation extends FetchInstrumentation {
     }
     const method = (options.method || 'GET').toUpperCase();
     const spanName = `HTTP ${method}`;
+    console.log(`create span: url: ${url}, options: ${options} `)
 
     let span;
     if (globalOptions.metadataOnly) {
@@ -140,5 +145,6 @@ class EpsagonFetchInstrumentation extends FetchInstrumentation {
     return this.tracer.startSpan(spanName, span, this.epsParentSpan.currentSpan ? api.trace.setSpan(api.context.active(), this.epsParentSpan.currentSpan) : undefined);
   }
 }
+
 
 export default EpsagonFetchInstrumentation;
