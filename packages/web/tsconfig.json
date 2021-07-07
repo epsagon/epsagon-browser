@@ -1,0 +1,19 @@
+{
+    "include": ["src/**/*"],
+    "compilerOptions": {
+      "allowJs": true,
+      "declaration": true,
+      "emitDeclarationOnly": false,
+      "outDir": "dist",
+      "target": "es5",
+      "lib": [
+        "dom",
+        "dom.iterable",
+        "esnext"
+      ],
+      "skipLibCheck": true,
+      "esModuleInterop": true,
+      "allowSyntheticDefaultImports": true,
+      "strict": true,
+    }
+  }
