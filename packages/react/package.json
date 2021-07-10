@@ -61,7 +61,7 @@
     "react": "^16.0.0"
   },
   "dependencies": {
-    "@epsagon/web": "^1.0.1",
+    "@epsagon/web": "^1.1.5",
     "@opentelemetry/plugin-react-load": "^0.16.0",
     "ua-parser-js": "^0.7.28"
   },

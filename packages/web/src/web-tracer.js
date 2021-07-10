@@ -9,6 +9,9 @@ const {CompositePropagator, HttpTraceContextPropagator} = require("@opentelemetr
 const parser = require('ua-parser-js');
 const { registerInstrumentations } = require('@opentelemetry/instrumentation');
 
+let epsSpan;
+const DEFAULT_APP_NAME = 'Epsagon Application'
+
 class EpsagonSpan {
 
   timeout = 30000
@@ -24,6 +27,8 @@ class EpsagonSpan {
     span.end();
     this._currentSpan = span
     this._time = Date.now()
+    this.identifyFields = null;
+    this.tags = {};
   }
 
   get currentSpan() {
@@ -44,27 +49,46 @@ class EpsagonSpan {
   }
 }
 
+function identify(options){
+  if(epsSpan){
+    epsSpan.identifyFields = {
+      userId: options.userId, 
+      name: options.name, 
+      email: options.email, 
+      companyId: options.companyId, 
+      companyName: options.companyName
+    }
+  }
+}
+
+function tag(key, value){
+  if(epsSpan){
+    epsSpan.tags[key] = value
+  }
+}
+
 let _configData;
 
-//to pass into the init - app_name: str, token: str, whitelist: arr, isEpsagonDisabled: bool, metadataOnly
 function init (configData) {
   _configData = configData;
+  if (configData.isEpsagonDisabled) {
+    return;
+  }
+
   if (!configData.token) {
     console.log('Epsagon token must be passed into initialization')
     return
   }
 
-  if (configData.isEpsagonDisabled) {
-    return;
+  if (!configData.collectorURL) {
+    configData.collectorURL = 'https://opentelemetry.tc.epsagon.com/traces';
   }
 
-  if (!configData.url) {
-    configData.url = 'https://opentelemetry.tc.epsagon.com/traces';
-  }
+  const appName = configData.appName || DEFAULT_APP_NAME
 
   const collectorOptions = {
-    serviceName: configData.app_name,
-    url: configData.url,
+    serviceName: appName,
+    url: configData.collectorURL,
     hosts: configData.hosts,
     headers: {
       "X-Epsagon-Token": `${configData.token}`,
@@ -89,13 +113,13 @@ function init (configData) {
     }) 
   });
 
-  const tracer = provider.getTracer(configData.app_name);
-  let epsSpan = new EpsagonSpan(tracer);
+  const tracer = provider.getTracer(appName);
+  epsSpan = new EpsagonSpan(tracer);
 
   let whiteListedURLsRegex;
-  if(configData.whitelist){
+  if(configData.propagateTraceHeaderUrls){
     let regUrlsString = ''; 
-    configData.whitelist.map((url)=> {
+    configData.propagateTraceHeaderUrls.map((url)=> {
       regUrlsString += `${url}|`
     })
     whiteListedURLsRegex = new RegExp(regUrlsString.slice(0, -1), "i")
@@ -119,9 +143,5 @@ function init (configData) {
   return { tracer, epsSpan };
 }
 
-function tag (key, value) {
-  const tracer = provider.getTracer(_configData.app_name);
-  // tracer.
-}
 
-export { init, tag }
+export { init, identify, tag }

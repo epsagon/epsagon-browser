@@ -14,17 +14,20 @@ class EpsagonExporter extends CollectorTraceExporter {
     this.formatter = new EpsagonFormatter(config)
 
     // start requesting for ip
-    fetch('https://api.ipify.org?format=json')
+    fetch('https://api.ipify.org?format=json', {
+      eps: true, // added to negate span creation
+      })
       .then(response => response.json())
       .then(data => {
         this.userAgent.browser.ip = data.ip
-        fetch(`http://ip-api.com/json/${data.ip}?fields=16665`)
+        fetch(`http://ip-api.com/json/${data.ip}?fields=16409`, {
+          eps: true, // added to negate span creation
+          })
           .then(response2 => response2.json())
           .then(data2 => {
               this.userAgent.browser.country = data2.country
               this.userAgent.browser.regionName = data2.regionName
               this.userAgent.browser.city = data2.city
-              this.userAgent.browser.timezone = data2.timezone
             });
       });
   }
@@ -195,30 +198,24 @@ class EpsagonExporter extends CollectorTraceExporter {
 
     //ADD IP IF EXISTS
     if (this.userAgent.browser.ip) {
-      convertedSpans.resourceSpans[0].resource.attributes[resourcesLength] = { key: 'browser.ip', value: { stringValue: this.userAgent.browser.ip } };
+      convertedSpans.resourceSpans[0].resource.attributes[resourcesLength] = { key: 'user.ip', value: { stringValue: this.userAgent.browser.ip } };
       resourcesLength++;
     }
     //ADD COUNTRY IF EXISTS
     if (this.userAgent.browser.country) {
-      convertedSpans.resourceSpans[0].resource.attributes[resourcesLength] = { key: 'browser.country', value: { stringValue: this.userAgent.browser.country } };
+      convertedSpans.resourceSpans[0].resource.attributes[resourcesLength] = { key: 'user.country', value: { stringValue: this.userAgent.browser.country } };
       resourcesLength++;
     }
 
     //ADD CITY IF EXISTS
     if (this.userAgent.browser.city) {
-      convertedSpans.resourceSpans[0].resource.attributes[resourcesLength] = { key: 'browser.city', value: { stringValue: this.userAgent.browser.city } };
+      convertedSpans.resourceSpans[0].resource.attributes[resourcesLength] = { key: 'user.city', value: { stringValue: this.userAgent.browser.city } };
       resourcesLength++;
     }
 
     //ADD REGION IF EXISTS
     if (this.userAgent.browser.regionName) {
-      convertedSpans.resourceSpans[0].resource.attributes[resourcesLength] = { key: 'browser.regionName', value: { stringValue: this.userAgent.browser.regionName } };
-      resourcesLength++;
-    }
-
-    //ADD TIMEZONE IF EXISTS
-    if (this.userAgent.browser.timezone) {
-      convertedSpans.resourceSpans[0].resource.attributes[resourcesLength] = { key: 'browser.timezone', value: { stringValue: this.userAgent.browser.timezone } };
+      convertedSpans.resourceSpans[0].resource.attributes[resourcesLength] = { key: 'user.region', value: { stringValue: this.userAgent.browser.regionName } };
       resourcesLength++;
     }
 

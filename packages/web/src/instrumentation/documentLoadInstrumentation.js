@@ -8,6 +8,22 @@ class EpsagonDocumentLoadInstrumentation extends DocumentLoadInstrumentation {
     this.epsParentSpan = parentSpan;
   }
 
+  addEpsSpanAttrs(span) {
+    if(this.epsParentSpan.identifyFields){
+      const { userId, userName, userEmail, companyId, companyName } = this.epsParentSpan.identifyFields;
+      if (userId) span.setAttribute('user.id', userId);
+      if (userName) span.setAttribute('user.name', userName);
+      if (userEmail) span.setAttribute('user.email', userEmail);
+      if (companyId) span.setAttribute('company.id', companyId);
+      if (companyName) span.setAttribute('company.name', companyName);
+    }
+    if(this.epsParentSpan.tags){
+        for(let key in this.epsParentSpan.tags){
+            span.setAttribute(key, this.epsParentSpan.tags[key])
+        }
+    }
+  }
+
   _onDocumentLoaded(event = false) {
     // Timeout is needed as load event doesn't have yet the performance metrics for loadEnd.
     // Support for event "loadend" is very limited and cannot be used
@@ -29,6 +45,7 @@ class EpsagonDocumentLoadInstrumentation extends DocumentLoadInstrumentation {
     if (initialSpan && !this.epsParentSpan.currentSpan) {
       this.epsParentSpan.currentSpan = initialSpan;
     }
+    this.addEpsSpanAttrs(initialSpan);
     return initialSpan;
   }
 
@@ -60,6 +77,7 @@ class EpsagonDocumentLoadInstrumentation extends DocumentLoadInstrumentation {
         // "stack": stack
       },
     }, this.epsParentSpan.currentSpan ? api.trace.setSpan(api.context.active(), this.epsParentSpan.currentSpan) : undefined);
+    this.addEpsSpanAttrs(span);
     span.setStatus({ code: 2 });
     span.end();
   }
