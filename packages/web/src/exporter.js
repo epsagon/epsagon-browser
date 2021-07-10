@@ -143,7 +143,7 @@ class EpsagonExporter extends CollectorTraceExporter {
       const spanErrs = [];
       const finalSpans = [];
       spansList[rootSpan.doc.position].spans.map((span) => {
-        if (!spanErrs.includes(span.attributes[0].value.stringValue)) {
+        if (span.name === 'error' && !spanErrs.includes(span.attributes[0].value.stringValue)) {
           const errAttr = span.attributes.filter((attr) => attr.key === 'message');
           const spanStringError = errAttr && errAttr.length ? errAttr[0].value.stringValue : 'exception'
 
