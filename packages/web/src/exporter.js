@@ -33,6 +33,7 @@ class EpsagonExporter extends CollectorTraceExporter {
   }
 
   convert(spans) {
+    console.log(spans)
     try {
       const convertedSpans = super.convert(spans);
       const spansList = convertedSpans.resourceSpans[0].instrumentationLibrarySpans;
@@ -149,7 +150,7 @@ class EpsagonExporter extends CollectorTraceExporter {
 
           spanErrs.push(spanStringError);
           const attributesLength = this.addFinalGenericSpanAttrs(span.attributes, span.attributes.length, span);
-          span.name = window.location.pathname;
+          span.name = `${window.location.pathname}${window.location.hash}`;
           span.events.unshift({
             name: 'exception',
             attributes: [

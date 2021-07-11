@@ -70,6 +70,7 @@ function tag(key, value){
 let _configData;
 
 function init (configData) {
+  console.log('initializing')
   _configData = configData;
   if (configData.isEpsagonDisabled) {
     return;
