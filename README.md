@@ -25,7 +25,7 @@ This package provides tracing to front end of web applications for the collectio
 
 To install Epsagon, simply run:
 ```sh
-npm install @epsagon/react
+npm install @epsagon/react --save
 ```
 
 ## Usage
