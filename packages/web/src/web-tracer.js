@@ -77,14 +77,14 @@ function init (configData) {
 
   if (!configData.token) {
     console.log('Epsagon token must be passed into initialization')
-    return
+    return;
   }
 
   if (!configData.collectorURL) {
     configData.collectorURL = 'https://opentelemetry.tc.epsagon.com/traces';
   }
 
-  const appName = configData.appName || DEFAULT_APP_NAME
+  const appName = configData.appName || DEFAULT_APP_NAME;
 
   const collectorOptions = {
     serviceName: appName,
