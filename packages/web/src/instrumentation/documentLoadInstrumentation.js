@@ -1,4 +1,5 @@
 import { DocumentLoadInstrumentation } from '@opentelemetry/instrumentation-document-load';
+import EpsagonUtils from '../utils';
 
 const api = require('@opentelemetry/api');
 
@@ -6,22 +7,6 @@ class EpsagonDocumentLoadInstrumentation extends DocumentLoadInstrumentation {
   constructor(parentSpan) {
     super();
     this.epsParentSpan = parentSpan;
-  }
-
-  addEpsSpanAttrs(span) {
-    if(this.epsParentSpan.identifyFields){
-      const { userId, userName, userEmail, companyId, companyName } = this.epsParentSpan.identifyFields;
-      if (userId) span.setAttribute('user.id', userId);
-      if (userName) span.setAttribute('user.name', userName);
-      if (userEmail) span.setAttribute('user.email', userEmail);
-      if (companyId) span.setAttribute('company.id', companyId);
-      if (companyName) span.setAttribute('company.name', companyName);
-    }
-    if(this.epsParentSpan.tags){
-        for(let key in this.epsParentSpan.tags){
-            span.setAttribute(key, this.epsParentSpan.tags[key])
-        }
-    }
   }
 
   _onDocumentLoaded(event = false) {
@@ -45,8 +30,7 @@ class EpsagonDocumentLoadInstrumentation extends DocumentLoadInstrumentation {
     if (initialSpan && !this.epsParentSpan.currentSpan) {
       this.epsParentSpan.currentSpan = initialSpan;
     }
-    console.log(initialSpan)
-    this.addEpsSpanAttrs(initialSpan);
+    EpsagonUtils.addEpsSpanAttrs(initialSpan, this.epsParentSpan);
     return initialSpan;
   }
 
@@ -78,7 +62,7 @@ class EpsagonDocumentLoadInstrumentation extends DocumentLoadInstrumentation {
         // "stack": stack
       },
     }, this.epsParentSpan.currentSpan ? api.trace.setSpan(api.context.active(), this.epsParentSpan.currentSpan) : undefined);
-    this.addEpsSpanAttrs(span);
+    EpsagonUtils.addEpsSpanAttrs(span, this.epsParentSpan);
     span.setStatus({ code: 2 });
     span.end();
   }
