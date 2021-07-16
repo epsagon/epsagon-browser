@@ -45,6 +45,7 @@ class EpsagonDocumentLoadInstrumentation extends DocumentLoadInstrumentation {
     if (initialSpan && !this.epsParentSpan.currentSpan) {
       this.epsParentSpan.currentSpan = initialSpan;
     }
+    console.log(initialSpan)
     this.addEpsSpanAttrs(initialSpan);
     return initialSpan;
   }
