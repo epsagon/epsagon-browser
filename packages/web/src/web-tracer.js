@@ -5,6 +5,8 @@ import EpsagonFetchInstrumentation from './instrumentation/fetchInstrumentation'
 import EpsagonXMLHttpRequestInstrumentation from './instrumentation/xmlHttpInstrumentation';
 import EpsagonDocumentLoadInstrumentation from './instrumentation/documentLoadInstrumentation'
 import EpsagonExporter from './exporter';
+import EpsagonUtils from './utils';
+import EpsagonRedirectInstrumentation from './instrumentation/redirectInstrumentation';
 const {CompositePropagator, HttpTraceContextPropagator} = require("@opentelemetry/core")
 const parser = require('ua-parser-js');
 const { registerInstrumentations } = require('@opentelemetry/instrumentation');
@@ -141,8 +143,10 @@ function init (configData) {
     ],
   });
 
+  const resetTimer = 3000;
+  new EpsagonRedirectInstrumentation(tracer, epsSpan, resetTimer);
+
   return { tracer, epsSpan };
 }
 
-
-export { init, identify, tag }
+export { init, identify, tag, EpsagonUtils }
