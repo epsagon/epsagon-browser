@@ -6,14 +6,14 @@ class EpsagonFormatter {
   }
 
   formatRouteChangeSpan(span, spanAttributes, attributesLength, userAgent) {
-    span.name = window.location.pathname;
+    span.name = `${window.location.pathname}${window.location.hash}`;
     spanAttributes[attributesLength] = { key: 'http.request.headers.User-Agent', value: { stringValue: JSON.stringify(userAgent).replace(/"([^"]+)":/g, '$1:') } };
     attributesLength++;
     return attributesLength;
   }
 
   formatDocumentLoadSpan(span, spanAttributes, attributesLength) {
-    span.name = window.location.pathname;
+    span.name = `${window.location.pathname}${window.location.hash}`;
     spanAttributes[attributesLength] = { key: 'type', value: { stringValue: 'browser' } };
     attributesLength++;
     spanAttributes[attributesLength] = { key: 'operation', value: { stringValue: 'page_load' } };
