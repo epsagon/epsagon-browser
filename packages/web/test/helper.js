@@ -1,6 +1,7 @@
 const JSDOM = require( "jsdom" ).JSDOM;
 const fetch = require('node-fetch');
 const sinon = require("sinon");
+const epsagon = require('../src/web-tracer');
 
 /**
  *  Simulate browser environment for nodejs.
@@ -28,6 +29,19 @@ module.exports.browserenv =  function() {
   if (!globalThis.fetch) {
     globalThis.fetch = fetch;
   };
+  
+  global.document.getElementsByTagName = (name = meta) => {
+    return [{
+      name: 'page name',
+      getAttribute: () => {
+        return name
+      }
+    }]
+  }
+
+  globalThis.performance = global.window.performance;
+  globalThis.window = global.window;
+  globalThis.document = global.document;
 
   globalThis.XMLHttpRequest = sinon.useFakeXMLHttpRequest();
   var requests = this.requests = [];
@@ -35,6 +49,9 @@ module.exports.browserenv =  function() {
   globalThis.XMLHttpRequest.onCreate = function (xhr) {
     requests.push(xhr);
   };
+
+  let res = epsagon.init({token: 'dfsaf'});
+
 }
 
 module.exports.restore = () => {
