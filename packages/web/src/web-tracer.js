@@ -11,6 +11,7 @@ const {CompositePropagator, HttpTraceContextPropagator} = require("@opentelemetr
 const parser = require('ua-parser-js');
 const { registerInstrumentations } = require('@opentelemetry/instrumentation');
 
+let existingTracer;
 let epsSpan;
 const DEFAULT_APP_NAME = 'Epsagon Application'
 
@@ -72,14 +73,19 @@ function tag(key, value){
 let _configData;
 
 function init (configData) {
-  console.log('initializing')
   _configData = configData;
   if (configData.isEpsagonDisabled) {
+    console.log('epsagon disabled, tracing not running')
+    return;
+  }
+
+  if(existingTracer && !configData.isTest){
+    console.log('tracer already initialized, remove duplicate initialization call');
     return;
   }
 
   if (!configData.token) {
-    console.log('Epsagon token must be passed into initialization')
+    console.log('Epsagon token must be passed into initialization');
     return;
   }
 
@@ -117,7 +123,12 @@ function init (configData) {
   });
 
   const tracer = provider.getTracer(appName);
+  existingTracer = true;
   epsSpan = new EpsagonSpan(tracer);
+
+  if(configData.isTest){
+    epsSpan.isTest = true;
+  }
 
   let whiteListedURLsRegex;
   if(configData.propagateTraceHeaderUrls){

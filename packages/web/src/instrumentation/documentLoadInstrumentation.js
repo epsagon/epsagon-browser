@@ -16,16 +16,13 @@ class EpsagonDocumentLoadInstrumentation extends DocumentLoadInstrumentation {
       if (event.error || event.reason) {
         this.reportError(event);
       } else {
-        console.log('collect')
         this._collectPerformance();
       }
     });
   }
 
   _startSpan(spanName, performanceName, entries, parentSpan) {
-    console.log(spanName, 'hhh')
-    console.log(performanceName)
-    console.log(entries)
+    
     // drop document fetch events
     if (spanName == 'documentFetch') {
       return undefined;
@@ -35,7 +32,6 @@ class EpsagonDocumentLoadInstrumentation extends DocumentLoadInstrumentation {
       this.epsParentSpan.currentSpan = initialSpan;
     }
     EpsagonUtils.addEpsSpanAttrs(initialSpan, this.epsParentSpan);
-    console.log(initialSpan)
     return initialSpan;
   }
 

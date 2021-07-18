@@ -12,7 +12,7 @@ describe('init tests', () => {
   });
 
   it('init function produces tracer and epsSpan', () => {
-    let res = epsagon.init({ 'token': 'fasdfsafa', appName: appName });
+    let res = epsagon.init({ 'token': 'fasdfsafa', appName: appName, isTest:true });
     chai.assert.exists(res.tracer, 'tracer was created');
     chai.assert.exists(res.epsSpan, 'epsSpan was created');
     chai.assert.equal(res.tracer.instrumentationLibrary.name, appName, 'app name should be passed into tracer');
@@ -20,12 +20,12 @@ describe('init tests', () => {
   });
 
   it('init function returns if no token passed in', () => {
-    let res = epsagon.init({ appName: appName });
+    let res = epsagon.init({ appName: appName, isTest:true });
     chai.assert.notExists(res, 'res should be false');
   });
 
   it('init function returns if epsagon disabled', () => {
-    let res = epsagon.init({ 'token': 'fasdfsafa', appName: appName, isEpsagonDisabled: true });
+    let res = epsagon.init({ 'token': 'fasdfsafa', appName: appName, isEpsagonDisabled: true, isTest:true });
     chai.assert.notExists(res, 'res should be false');
   });
 
@@ -41,7 +41,7 @@ describe('tags tests', () => {
       companyId: 'company id test', 
       companyName: 'company name'
     }
-    let res = epsagon.init({ 'token': 'fasdfsafa', appName: appName });
+    let res = epsagon.init({ 'token': 'fasdfsafa', appName: appName, isTest:true });
     chai.assert.exists(res.epsSpan, 'epsSpan was created');
     chai.assert.exists(res.epsSpan.currentSpan, 'current span should have been created')
     epsagon.identify(options);
@@ -52,7 +52,7 @@ describe('tags tests', () => {
   it('tags adds to epsSpan', () => {
     let sampleKey = 'sample key';
     let sampleValue = 'sample value';
-    let res = epsagon.init({ 'token': 'fasdfsafa', appName: appName });
+    let res = epsagon.init({ 'token': 'fasdfsafa', appName: appName, isTest:true });
     chai.assert.exists(res.epsSpan, 'epsSpan was created');
     chai.assert.exists(res.epsSpan.currentSpan, 'current span should have been created')
     epsagon.tag(sampleKey, sampleValue);

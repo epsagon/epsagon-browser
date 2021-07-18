@@ -3,6 +3,13 @@ const fetch = require('node-fetch');
 const sinon = require("sinon");
 const epsagon = require('../src/web-tracer');
 
+
+class Request {
+  constructor(){
+    console.log('doesnt matter');
+  }
+}
+
 /**
  *  Simulate browser environment for nodejs.
  */
@@ -26,9 +33,8 @@ module.exports.browserenv =  function() {
     userAgent: "node.js"
   };
 
-  if (!globalThis.fetch) {
-    globalThis.fetch = fetch;
-  };
+  globalThis.fetch = fetch;
+  globalThis.window.fetch = globalThis.fetch;
   
   global.document.getElementsByTagName = (name = meta) => {
     return [{
@@ -50,10 +56,27 @@ module.exports.browserenv =  function() {
     requests.push(xhr);
   };
 
-  let res = epsagon.init({token: 'dfsaf'});
+  globalThis.Request = Request;
 
+  let res = epsagon.init({token: 'dfsaf', isTest:true});
+  return res.epsSpan
+}
+
+module.exports.createError = () => {
+  const e = new window.ErrorEvent('error', {"error": {"message":'my error'}, "message": 'myerror'});
+  window.dispatchEvent(e);
 }
 
 module.exports.restore = () => {
     globalThis.XMLHttpRequest.restore();
+}
+
+module.exports.type = {
+  DOC: 'browser',
+  HTTP: 'http'
+}
+
+module.exports.operations = {
+  LOAD: 'page_load',
+  ROUTE: 'route_change'
 }
