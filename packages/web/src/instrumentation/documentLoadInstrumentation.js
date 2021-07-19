@@ -22,6 +22,7 @@ class EpsagonDocumentLoadInstrumentation extends DocumentLoadInstrumentation {
   }
 
   _startSpan(spanName, performanceName, entries, parentSpan) {
+    
     // drop document fetch events
     if (spanName == 'documentFetch') {
       return undefined;

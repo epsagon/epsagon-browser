@@ -54,7 +54,7 @@ class EpsagonFetchInstrumentation extends FetchInstrumentation {
             const resClone = response.clone();
             const resClone2 = response.clone();
             const { body } = resClone;
-            if (body) {
+            if (body && !plugin.epsParentSpan.isTest) {
               const reader = body.getReader();
               const read = () => {
                 reader.read().then(async ({ done }) => {
