@@ -24,7 +24,7 @@ class EpsagonFetchInstrumentation extends FetchInstrumentation {
           //if epsagon request, ignore and dont send through eps param
           return original.apply(this, [url, {}]);
         }
-        const createdSpan = plugin._createSpan(url, options, plugin.globalOptions);
+        const createdSpan = plugin._createSpan(url, options);
         if (!createdSpan) {
           return original.apply(this, [url, options]);
         }
@@ -59,7 +59,7 @@ class EpsagonFetchInstrumentation extends FetchInstrumentation {
               const read = () => {
                 reader.read().then(async ({ done }) => {
                   if (done) {
-                    if(!plugin.globalOptions.metadataOnly){
+                    if(plugin.globalOptions && !plugin.globalOptions.metadataOnly){
                       const resHeaders = [];
                       for (const entry of resClone2.headers.entries()) {
                         if (entry[0] === 'content-length') {
@@ -114,7 +114,7 @@ class EpsagonFetchInstrumentation extends FetchInstrumentation {
   }
 
   // create span copied over so parent span can be added at creation, additional attributes also added here
-  _createSpan(url, options = {}, globalOptions) {
+  _createSpan(url, options = {}) {
     if (core.isUrlIgnored(url, this._getConfig().ignoreUrls)) {
       api.diag.debug('ignoring span as url matches ignored url');
       return;
@@ -124,7 +124,7 @@ class EpsagonFetchInstrumentation extends FetchInstrumentation {
     console.log(`create span: url: ${url}, options: ${options} `)
 
     let span;
-    if (globalOptions.metadataOnly) {
+    if(this.globalOptions.metadataOnly) {
       span = {
         kind: api.SpanKind.CLIENT,
         attributes: {
