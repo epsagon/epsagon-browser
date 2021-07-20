@@ -50,8 +50,8 @@
     "test:build": "run-s build",
     "test:lint": "eslint .",
     "test:unit": "cross-env CI=1 mocha --require @babel/register",
-    "test:watch": "mocha --require @babel/register --require mocha-suppress-logs",
-    "test": "mocha --require @babel/register --require mocha-suppress-logs",
+    "test:watch": "mocha --require @babel/register --require mocha-suppress-logs --exit",
+    "test": "mocha --require @babel/register --require mocha-suppress-logs --exit",
     "predeploy": "cd example && npm install && npm run build",
     "deploy": "gh-pages -d example/build",
     "semantic-release": "semantic-release"

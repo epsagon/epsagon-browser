@@ -34,11 +34,12 @@ describe('xhr instrumentation', () => {
         spyAttrs.restore()
     })
 
-    it('should construct an instance', () => {
+    it('should construct an instance', (done) => {
         let plugin = new EpsagonXMLHttpRequestInstrumentation({
             enabled: false,
         });
         chai.assert.ok(plugin instanceof EpsagonXMLHttpRequestInstrumentation);
+        done();
     });
 
     it('should create span for xml request', done => {

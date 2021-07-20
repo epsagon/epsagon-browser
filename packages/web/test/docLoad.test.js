@@ -51,11 +51,12 @@ describe('docload instrumentation', () => {
     spyExporter.restore()
   })
 
-  it('should construct an instance', () => {
+  it('should construct an instance', (done) => {
     let plugin = new EpsagonDocumentLoadInstrumentation({
       enabled: false,
     });
     chai.assert.ok(plugin instanceof EpsagonDocumentLoadInstrumentation);
+    done();
   });
 
   it('should create span for document load', done => {
