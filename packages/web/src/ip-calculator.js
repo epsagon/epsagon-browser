@@ -1,3 +1,5 @@
+const API_KEY = 'PfW1i6IVetxP8Xu'
+
 class EpsagonIPCalculator {
   calculate(callback) {
     // start requesting for ip
@@ -8,7 +10,7 @@ class EpsagonIPCalculator {
       .then((response) => response.json())
       .then((data) => {
         /* eslint-disable no-undef */
-        fetch(`http://ip-api.com/json/${data.ip}?fields=16409`, {
+        fetch(`https://pro.ip-api.com/json/${data.ip}?fields=16409&key=${API_KEY}`, {
           eps: true, // added to negate span creation
         })
           .then((response2) => response2.json())
