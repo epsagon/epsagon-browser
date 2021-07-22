@@ -3,7 +3,6 @@ import ReactRedirectInstrumentation from './instrumentation/redirectInstrumentat
 const webInit = require('@epsagon/web').init;
 export {identify, tag} from '@epsagon/web';
 
-// to pass into the init - app_name: str, token: str
 function init(configData) {
   const { tracer, epsSpan } = webInit(configData);
 
