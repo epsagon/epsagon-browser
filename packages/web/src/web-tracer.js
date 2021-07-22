@@ -1,84 +1,86 @@
+/* eslint-disable no-underscore-dangle */
+/* eslint-disable no-console */
+
 import { BatchSpanProcessor } from '@opentelemetry/tracing';
 import { WebTracerProvider } from '@opentelemetry/web';
 import { ZoneContextManager } from '@opentelemetry/context-zone';
 import EpsagonFetchInstrumentation from './instrumentation/fetchInstrumentation';
 import EpsagonXMLHttpRequestInstrumentation from './instrumentation/xmlHttpInstrumentation';
-import EpsagonDocumentLoadInstrumentation from './instrumentation/documentLoadInstrumentation'
+import EpsagonDocumentLoadInstrumentation from './instrumentation/documentLoadInstrumentation';
 import EpsagonExporter from './exporter';
 import EpsagonUtils from './utils';
 import EpsagonRedirectInstrumentation from './instrumentation/redirectInstrumentation';
-const {CompositePropagator, HttpTraceContextPropagator} = require("@opentelemetry/core")
+
+const { CompositePropagator, HttpTraceContextPropagator } = require('@opentelemetry/core');
 const parser = require('ua-parser-js');
 const { registerInstrumentations } = require('@opentelemetry/instrumentation');
 
 let existingTracer;
 let epsSpan;
-const DEFAULT_APP_NAME = 'Epsagon Application'
-const PAGE_LOAD_TIMEOUT = 30000
+const DEFAULT_APP_NAME = 'Epsagon Application';
+const PAGE_LOAD_TIMEOUT = 30000;
 
 class EpsagonSpan {
-
   constructor(tracer) {
-    let span = tracer.startSpan('epsagon_init', {
+    const span = tracer.startSpan('epsagon_init', {
       attributes: {
-        "operation": "page_load",
-        "type": "browser",
-      }
+        operation: 'page_load',
+        type: 'browser',
+      },
     });
     span.setStatus({ code: 0 });
     span.end();
-    this._currentSpan = span
-    this._time = Date.now()
+    this._currentSpan = span;
+    this._time = Date.now();
     this.identifyFields = null;
     this.tags = {};
   }
 
   get currentSpan() {
-    if(this._time !== null && this._time + PAGE_LOAD_TIMEOUT >= Date.now()){
-      return this._currentSpan
-    }else {
-      this.currentSpan = null
-      this._time = null
-      return null
+    if (this._time !== null && this._time + PAGE_LOAD_TIMEOUT >= Date.now()) {
+      return this._currentSpan;
     }
+    this.currentSpan = null;
+    this._time = null;
+    return null;
   }
 
-  set currentSpan(span){
-    if(span){
-      this._currentSpan = span
-      this._time = Date.now()
+  set currentSpan(span) {
+    if (span) {
+      this._currentSpan = span;
+      this._time = Date.now();
     }
   }
 }
 
-function identify(options){
-  if(epsSpan){
+function identify(options) {
+  if (epsSpan) {
     epsSpan.identifyFields = {
-      userId: options.userId, 
-      name: options.name, 
-      email: options.email, 
-      companyId: options.companyId, 
-      companyName: options.companyName
-    }
+      userId: options.userId,
+      name: options.name,
+      email: options.email,
+      companyId: options.companyId,
+      companyName: options.companyName,
+    };
   }
 }
 
-function tag(key, value){
-  if(epsSpan){
-    epsSpan.tags[key] = value
+function tag(key, value) {
+  if (epsSpan) {
+    epsSpan.tags[key] = value;
   }
 }
 
 let _configData;
 
-function init (configData) {
+function init(configData) {
   _configData = configData;
   if (configData.isEpsagonDisabled) {
-    console.log('epsagon disabled, tracing not running')
+    console.log('epsagon disabled, tracing not running');
     return;
   }
 
-  if(existingTracer && !configData.isTest){
+  if (existingTracer && !configData.isTest) {
     console.log('tracer already initialized, remove duplicate initialization call');
     return;
   }
@@ -99,14 +101,15 @@ function init (configData) {
     url: configData.collectorURL,
     hosts: configData.hosts,
     headers: {
-      "X-Epsagon-Token": `${configData.token}`,
+      'X-Epsagon-Token': `${configData.token}`,
     },
-    metadataOnly: configData.metadataOnly
+    metadataOnly: configData.metadataOnly,
   };
 
   const provider = new WebTracerProvider();
 
-  let userAgent = parser(navigator.userAgent);
+  /* eslint-disable no-undef */
+  const userAgent = parser(navigator.userAgent);
 
   const exporter = new EpsagonExporter(collectorOptions, userAgent);
 
@@ -116,40 +119,40 @@ function init (configData) {
     contextManager: new ZoneContextManager(),
     propagator: new CompositePropagator({
       propagators: [
-        new HttpTraceContextPropagator(),     
-      ], 
-    }) 
+        new HttpTraceContextPropagator(),
+      ],
+    }),
   });
 
   const tracer = provider.getTracer(appName);
   existingTracer = true;
   epsSpan = new EpsagonSpan(tracer);
 
-  if(configData.isTest){
+  if (configData.isTest) {
     epsSpan.isTest = true;
   }
 
   let whiteListedURLsRegex;
-  if(configData.propagateTraceHeaderUrls){
-    let regUrlsString = ''; 
-    configData.propagateTraceHeaderUrls.map((url)=> {
-      regUrlsString += `${url}|`
-    })
-    whiteListedURLsRegex = new RegExp(regUrlsString.slice(0, -1), "i")
-  }else{
-    whiteListedURLsRegex = /.+/
+  if (configData.propagateTraceHeaderUrls) {
+    let regUrlsString = '';
+    configData.propagateTraceHeaderUrls.map((url) => {
+      regUrlsString += `${url}|`;
+    });
+    whiteListedURLsRegex = new RegExp(regUrlsString.slice(0, -1), 'i');
+  } else {
+    whiteListedURLsRegex = /.+/;
   }
 
   registerInstrumentations({
     tracerProvider: provider,
     instrumentations: [
       new EpsagonDocumentLoadInstrumentation(epsSpan),
-      new EpsagonFetchInstrumentation({      
+      new EpsagonFetchInstrumentation({
         propagateTraceHeaderCorsUrls: whiteListedURLsRegex,
-      }, epsSpan, {metadataOnly: configData.metadataOnly}),
-      new EpsagonXMLHttpRequestInstrumentation({      
-          propagateTraceHeaderCorsUrls: whiteListedURLsRegex,
-        }, epsSpan, {metadataOnly: configData.metadataOnly})
+      }, epsSpan, { metadataOnly: configData.metadataOnly }),
+      new EpsagonXMLHttpRequestInstrumentation({
+        propagateTraceHeaderCorsUrls: whiteListedURLsRegex,
+      }, epsSpan, { metadataOnly: configData.metadataOnly }),
     ],
   });
 
@@ -159,4 +162,6 @@ function init (configData) {
   return { tracer, epsSpan };
 }
 
-export { init, identify, tag, EpsagonUtils }
+export {
+  init, identify, tag, EpsagonUtils,
+};

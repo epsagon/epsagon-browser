@@ -1,8 +1,11 @@
+/* eslint-disable no-underscore-dangle */
+/* eslint-disable no-console */
+/* eslint-disable max-len */
 import { FetchInstrumentation } from '@opentelemetry/instrumentation-fetch';
 
 const api = require('@opentelemetry/api');
 const core = require('@opentelemetry/core');
-const semantic_conventions_1 = require('@opentelemetry/semantic-conventions');
+const semanticConventions1 = require('@opentelemetry/semantic-conventions');
 
 class EpsagonFetchInstrumentation extends FetchInstrumentation {
   constructor(config, parentSpan, options) {
@@ -12,6 +15,7 @@ class EpsagonFetchInstrumentation extends FetchInstrumentation {
   }
 
   // has to be overridden in order to grab response obj before the stream is read and no longer useable
+  /* eslint-disable no-undef */
   _patchConstructor() {
     return (original) => {
       const plugin = this;
@@ -100,7 +104,7 @@ class EpsagonFetchInstrumentation extends FetchInstrumentation {
           console.log(`Before add headers: url: ${url}, options: ${options} `);
           plugin._addHeaders(options, url);
           console.log(`After add headers: url: ${url}, options: ${options} `);
-          plugin._tasksCount = plugin._tasksCount + 1;
+          plugin._tasksCount += 1;
           return original
             .apply(this, [url, options])
             .catch((ex) => {
@@ -129,8 +133,8 @@ class EpsagonFetchInstrumentation extends FetchInstrumentation {
         kind: api.SpanKind.CLIENT,
         attributes: {
           component: this.moduleName,
-          [semantic_conventions_1.SemanticAttributes.HTTP_METHOD]: method,
-          [semantic_conventions_1.SemanticAttributes.HTTP_URL]: url,
+          [semanticConventions1.SemanticAttributes.HTTP_METHOD]: method,
+          [semanticConventions1.SemanticAttributes.HTTP_URL]: url,
         },
       };
     } else {
@@ -138,8 +142,8 @@ class EpsagonFetchInstrumentation extends FetchInstrumentation {
         kind: api.SpanKind.CLIENT,
         attributes: {
           component: this.moduleName,
-          [semantic_conventions_1.SemanticAttributes.HTTP_METHOD]: method,
-          [semantic_conventions_1.SemanticAttributes.HTTP_URL]: url,
+          [semanticConventions1.SemanticAttributes.HTTP_METHOD]: method,
+          [semanticConventions1.SemanticAttributes.HTTP_URL]: url,
           'http.request.headers': JSON.stringify(options.headers),
           'http.request.body': options.body,
         },

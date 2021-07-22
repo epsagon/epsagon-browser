@@ -10,37 +10,37 @@ class EpsagonResourceManager {
     let resourcesLength = convertedSpans.resourceSpans[0].resource.attributes.length;
 
     convertedSpans.resourceSpans[0].resource.attributes[resourcesLength] = { key: 'application', value: { stringValue: appName } };
-    resourcesLength = resourcesLength + 1;
+    resourcesLength += 1;
     convertedSpans.resourceSpans[0].resource.attributes[resourcesLength] = { key: 'browser.name', value: { stringValue: this.userAgent.browser.name } };
-    resourcesLength = resourcesLength + 1;
+    resourcesLength += 1;
     convertedSpans.resourceSpans[0].resource.attributes[resourcesLength] = { key: 'browser.version', value: { stringValue: this.userAgent.browser.version } };
-    resourcesLength = resourcesLength + 1;
+    resourcesLength += 1;
     convertedSpans.resourceSpans[0].resource.attributes[resourcesLength] = { key: 'browser.operating_system', value: { stringValue: this.userAgent.os.name } };
-    resourcesLength = resourcesLength + 1;
+    resourcesLength += 1;
     convertedSpans.resourceSpans[0].resource.attributes[resourcesLength] = { key: 'browser.operating_system_version', value: { stringValue: this.userAgent.os.version } };
-    resourcesLength = resourcesLength + 1;
+    resourcesLength += 1;
 
     // ADD IP IF EXISTS
     if (this.userAgent.browser.ip) {
       convertedSpans.resourceSpans[0].resource.attributes[resourcesLength] = { key: 'user.ip', value: { stringValue: this.userAgent.browser.ip } };
-      resourcesLength = resourcesLength + 1;
+      resourcesLength += 1;
     }
     // ADD COUNTRY IF EXISTS
     if (this.userAgent.browser.country) {
       convertedSpans.resourceSpans[0].resource.attributes[resourcesLength] = { key: 'user.country', value: { stringValue: this.userAgent.browser.country } };
-      resourcesLength = resourcesLength + 1;
+      resourcesLength += 1;
     }
 
     // ADD CITY IF EXISTS
     if (this.userAgent.browser.city) {
       convertedSpans.resourceSpans[0].resource.attributes[resourcesLength] = { key: 'user.city', value: { stringValue: this.userAgent.browser.city } };
-      resourcesLength = resourcesLength + 1;
+      resourcesLength += 1;
     }
 
     // ADD REGION IF EXISTS
     if (this.userAgent.browser.regionName) {
       convertedSpans.resourceSpans[0].resource.attributes[resourcesLength] = { key: 'user.region', value: { stringValue: this.userAgent.browser.regionName } };
-      resourcesLength = resourcesLength + 1;
+      resourcesLength += 1;
     }
 
     // remove undefined service.name attr

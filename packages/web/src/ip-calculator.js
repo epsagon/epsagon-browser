@@ -1,11 +1,13 @@
 class EpsagonIPCalculator {
   calculate(callback) {
     // start requesting for ip
+    /* eslint-disable no-undef */
     fetch('https://api.ipify.org?format=json', {
       eps: true, // added to negate span creation
     })
       .then((response) => response.json())
       .then((data) => {
+        /* eslint-disable no-undef */
         fetch(`http://ip-api.com/json/${data.ip}?fields=16409`, {
           eps: true, // added to negate span creation
         })

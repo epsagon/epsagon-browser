@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import EpsagonUtils from './utils';
 
 class EpsagonFormatter {
@@ -6,34 +7,36 @@ class EpsagonFormatter {
   }
 
   formatRouteChangeSpan(span, spanAttributes, attributesLength, userAgent) {
+    /* eslint-disable no-undef */
     span.name = `${window.location.pathname}${window.location.hash}`;
     spanAttributes[attributesLength] = { key: 'http.request.headers.User-Agent', value: { stringValue: JSON.stringify(userAgent).replace(/"([^"]+)":/g, '$1:') } };
-    attributesLength = attributesLength + 1;
+    attributesLength += 1;
     return attributesLength;
   }
 
   formatDocumentLoadSpan(span, spanAttributes, attributesLength) {
+    /* eslint-disable no-undef */
     span.name = `${window.location.pathname}${window.location.hash}`;
     spanAttributes[attributesLength] = { key: 'type', value: { stringValue: 'browser' } };
-    attributesLength = attributesLength + 1;
+    attributesLength += 1;
     spanAttributes[attributesLength] = { key: 'operation', value: { stringValue: 'page_load' } };
-    attributesLength = attributesLength + 1;
+    attributesLength += 1;
     return attributesLength;
   }
 
   formatUserInteractionSpan(spanAttributes, attributesLength) {
     spanAttributes[attributesLength] = { key: 'type', value: { stringValue: 'user-interaction' } };
-    attributesLength = attributesLength + 1;
+    attributesLength += 1;
     const eventType = spanAttributes.filter((attr) => attr.key === ('event_type'));
     spanAttributes[attributesLength] = { key: 'operation', value: { stringValue: eventType[0].value.stringValue } };
-    attributesLength = attributesLength + 1;
+    attributesLength += 1;
     return attributesLength;
   }
 
   formatHttpRequestSpan(span, httpHost, spanAttributes, attributesLength) {
     span.name = httpHost[0].value.stringValue;
     spanAttributes[attributesLength] = { key: 'type', value: { stringValue: 'http' } };
-    attributesLength = attributesLength + 1;
+    attributesLength += 1;
 
     if (!this.config.metadataOnly) {
       const httpContentLength = spanAttributes.filter((attr) => attr.key === 'http.response_content_length');

@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+/* eslint-disable max-len */
 import { CollectorTraceExporter } from '@opentelemetry/exporter-collector';
 import EpsagonFormatter from './formatter';
 import EpsagonResourceManager from './resource-manager';
@@ -50,7 +52,7 @@ class EpsagonExporter extends CollectorTraceExporter {
     console.log(spans);
     try {
       const convertedSpans = super.convert(spans);
-      const spansList = EpsagonUtils.getFirstResourceSpan(convertedSpan).instrumentationLibrarySpans;
+      const spansList = EpsagonUtils.getFirstResourceSpan(convertedSpans).instrumentationLibrarySpans;
       const rootSpan = {
         rootType: rootType.EPS,
         eps: {},
@@ -126,9 +128,10 @@ class EpsagonExporter extends CollectorTraceExporter {
         spansList.splice(rootSpan.eps.position, 1);
       }
 
-      return resourceManager.addResourceAttrs(convertedSpans);
+      return this.resourceManager.addResourceAttrs(convertedSpans);
     } catch (err) {
       console.log('error converting and exporting', err);
+      return null;
     }
   }
 
@@ -161,6 +164,7 @@ class EpsagonExporter extends CollectorTraceExporter {
           const spanStringError = errAttr && errAttr.length ? errAttr[0].value.stringValue : rootType.EXCEPTION;
 
           spanErrs.push(spanStringError);
+          /* eslint-disable no-undef */
           span.name = `${window.location.pathname}${window.location.hash}`;
           span.events.unshift({
             name: rootType.EXCEPTION,
@@ -179,8 +183,10 @@ class EpsagonExporter extends CollectorTraceExporter {
     // replace any user agent keys with eps name convention
     const httpUA = spanAttributes.filter((attr) => attr.key === spanAttributeNames.HOST_USER_AGENT);
     if (httpUA.length) { httpUA[0].key = spanAttributeNames.HOST_REQUEST_USER_AGENT; }
+    /* eslint-disable no-undef */
     spanAttributes[attributesLength] = { key: spanAttributeNames.BROWSER_HOST, value: { stringValue: window.location.hostname } };
-    attributesLength = attributesLength + 1;
+    attributesLength += 1;
+    /* eslint-disable no-undef */
     spanAttributes[attributesLength] = { key: spanAttributeNames.BROWSER_PATH, value: { stringValue: window.location.pathname } };
     span.attributes = spanAttributes.filter((attr) => {
       if (this.config.metadataOnly) {

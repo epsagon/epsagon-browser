@@ -1,3 +1,5 @@
+/* eslint-disable no-underscore-dangle */
+/* eslint-disable max-len */
 import { DocumentLoadInstrumentation } from '@opentelemetry/instrumentation-document-load';
 import EpsagonUtils from '../utils';
 
@@ -12,6 +14,7 @@ class EpsagonDocumentLoadInstrumentation extends DocumentLoadInstrumentation {
   _onDocumentLoaded(event = false) {
     // Timeout is needed as load event doesn't have yet the performance metrics for loadEnd.
     // Support for event "loadend" is very limited and cannot be used
+    /* eslint-disable no-undef */
     window.setTimeout(() => {
       if (event.error || event.reason) {
         this.reportError(event);
@@ -21,9 +24,9 @@ class EpsagonDocumentLoadInstrumentation extends DocumentLoadInstrumentation {
     });
   }
 
-  _startSpan(spanName, performanceName, entries, parentSpan) {
+  _startSpan(spanName, performanceName, entries) {
     // drop document fetch events
-    if (spanName == 'documentFetch') {
+    if (spanName === 'documentFetch') {
       return undefined;
     }
     const initialSpan = super._startSpan(spanName, performanceName, entries, this.epsParentSpan.currentSpan);
@@ -35,7 +38,7 @@ class EpsagonDocumentLoadInstrumentation extends DocumentLoadInstrumentation {
   }
 
   // drop resource fetch spans
-  _initResourceSpan(resource, parentSpan) {
+  _initResourceSpan() {
   }
 
   _includes(obj, str) {
@@ -67,6 +70,7 @@ class EpsagonDocumentLoadInstrumentation extends DocumentLoadInstrumentation {
     span.end();
   }
 
+  /* eslint-disable no-undef */
   _waitForPageLoad() {
     if (window.document.readyState === 'complete') {
       this._onDocumentLoaded();
@@ -79,6 +83,7 @@ class EpsagonDocumentLoadInstrumentation extends DocumentLoadInstrumentation {
     }
   }
 
+  /* eslint-disable no-undef */
   enable() {
     // remove previously attached load to avoid adding the same event twice
     // in case of multiple enable calling.
@@ -89,9 +94,7 @@ class EpsagonDocumentLoadInstrumentation extends DocumentLoadInstrumentation {
     this._waitForPageLoad();
   }
 
-  /**
-     * implements disable function
-     */
+  /* eslint-disable no-undef */
   disable() {
     super.disable();
     window.removeEventListener('error', this._onDocumentLoaded);

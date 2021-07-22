@@ -21,26 +21,26 @@ class EpsagonUtils {
     if (httpUrl.indexOf('?') < 0 && httpUrl.indexOf(';') < 0) {
       const path = httpUrl.substring(httpUrl.indexOf(span.name) + span.name.length);
       spanAttributes[attributesLength] = { key: 'http.request.path', value: { stringValue: path } };
-      attributesLength = attributesLength + 1;
+      attributesLength += 1;
     }
     if (httpUrl.indexOf('?') > 0) {
       const path = httpUrl.substring(httpUrl.indexOf(span.name) + span.name.length, httpUrl.indexOf('?'));
       spanAttributes[attributesLength] = { key: 'http.request.path', value: { stringValue: path } };
-      attributesLength = attributesLength + 1;
+      attributesLength += 1;
       if (!metadataOnly) {
         const query = httpUrl.substring(httpUrl.indexOf('?'));
         spanAttributes[attributesLength] = { key: 'http.request.query', value: { stringValue: query } };
-        attributesLength = attributesLength + 1;
+        attributesLength += 1;
       }
     }
     if (httpUrl.indexOf(';') > 0) {
       const path = httpUrl.substring(httpUrl.indexOf(span.name) + span.name.length, httpUrl.indexOf(';'));
       spanAttributes[attributesLength] = { key: 'http.request.path', value: { stringValue: path } };
-      attributesLength = attributesLength + 1;
+      attributesLength += 1;
       if (!metadataOnly) {
         const params = httpUrl.substring(httpUrl.indexOf(';'));
         spanAttributes[attributesLength] = { key: 'http.request.path_params', value: { stringValue: params } };
-        attributesLength = attributesLength + 1;
+        attributesLength += 1;
       }
     }
 
