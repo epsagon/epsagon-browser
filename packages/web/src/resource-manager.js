@@ -1,6 +1,5 @@
 class EpsagonResourceManager {
   constructor(config) {
-    super(config);
     this.config = config;
   }
 
@@ -12,41 +11,41 @@ class EpsagonResourceManager {
 
     // WE CANT USE THE NATIVE OPENTELEMETRY ADDATTRIBUTE SINCE IT WILL SHUTDOWN THE SPAN
     convertedSpans.resourceSpans[0].resource.attributes[resourcesLength] = { key: 'application', value: { stringValue: appName } };
-    resourcesLength++;
+    resourcesLength = resourcesLength + 1;
     convertedSpans.resourceSpans[0].resource.attributes[resourcesLength] = { key: 'browser.name', value: { stringValue: this.userAgent.browser.name } };
-    resourcesLength++;
+    resourcesLength = resourcesLength + 1;
     convertedSpans.resourceSpans[0].resource.attributes[resourcesLength] = { key: 'browser.version', value: { stringValue: this.userAgent.browser.version } };
-    resourcesLength++;
+    resourcesLength = resourcesLength + 1;
     convertedSpans.resourceSpans[0].resource.attributes[resourcesLength] = { key: 'browser.operating_system', value: { stringValue: this.userAgent.os.name } };
-    resourcesLength++;
+    resourcesLength = resourcesLength + 1;
     convertedSpans.resourceSpans[0].resource.attributes[resourcesLength] = { key: 'browser.operating_system_version', value: { stringValue: this.userAgent.os.version } };
-    resourcesLength++;
+    resourcesLength = resourcesLength + 1;
 
-    //ADD IP IF EXISTS
+    // ADD IP IF EXISTS
     if (this.userAgent.browser.ip) {
       convertedSpans.resourceSpans[0].resource.attributes[resourcesLength] = { key: 'user.ip', value: { stringValue: this.userAgent.browser.ip } };
-      resourcesLength++;
+      resourcesLength = resourcesLength + 1;
     }
-    //ADD COUNTRY IF EXISTS
+    // ADD COUNTRY IF EXISTS
     if (this.userAgent.browser.country) {
       convertedSpans.resourceSpans[0].resource.attributes[resourcesLength] = { key: 'user.country', value: { stringValue: this.userAgent.browser.country } };
-      resourcesLength++;
+      resourcesLength = resourcesLength + 1;
     }
 
-    //ADD CITY IF EXISTS
+    // ADD CITY IF EXISTS
     if (this.userAgent.browser.city) {
       convertedSpans.resourceSpans[0].resource.attributes[resourcesLength] = { key: 'user.city', value: { stringValue: this.userAgent.browser.city } };
-      resourcesLength++;
+      resourcesLength = resourcesLength + 1;
     }
 
-    //ADD REGION IF EXISTS
+    // ADD REGION IF EXISTS
     if (this.userAgent.browser.regionName) {
       convertedSpans.resourceSpans[0].resource.attributes[resourcesLength] = { key: 'user.region', value: { stringValue: this.userAgent.browser.regionName } };
-      resourcesLength++;
+      resourcesLength = resourcesLength + 1;
     }
 
     // remove undefined service.name attr
-    convertedSpans.resourceSpans[0].resource.attributes = convertedSpans.resourceSpans[0].resource.attributes.filter((attr) => attr.key != ['service.name']);
+    convertedSpans.resourceSpans[0].resource.attributes = convertedSpans.resourceSpans[0].resource.attributes.filter((attr) => attr.key !== ['service.name']);
     return convertedSpans;
   }
 }

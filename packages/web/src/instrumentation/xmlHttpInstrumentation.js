@@ -1,8 +1,8 @@
 import { XMLHttpRequestInstrumentation } from '@opentelemetry/instrumentation-xml-http-request';
 
 const api = require('@opentelemetry/api');
-const core_1 = require('@opentelemetry/core');
-const semantic_conventions_1 = require('@opentelemetry/semantic-conventions');
+const core1 = require('@opentelemetry/core');
+const semanticConventions1 = require('@opentelemetry/semantic-conventions');
 
 class EpsagonXMLHttpRequestInstrumentation extends XMLHttpRequestInstrumentation {
   constructor(config, parentSpan, options) {
@@ -13,7 +13,7 @@ class EpsagonXMLHttpRequestInstrumentation extends XMLHttpRequestInstrumentation
 
   // create span copied over so parent span can be added at creation
   _createSpan(xhr, url, method) {
-    if (core_1.isUrlIgnored(url, this._getConfig().ignoreUrls)) {
+    if (core1.isUrlIgnored(url, this._getConfig().ignoreUrls)) {
       api.diag.debug('ignoring span as url matches ignored url');
       return;
     }
@@ -21,8 +21,8 @@ class EpsagonXMLHttpRequestInstrumentation extends XMLHttpRequestInstrumentation
     const currentSpan = this.tracer.startSpan(spanName, {
       kind: api.SpanKind.CLIENT,
       attributes: {
-        [semantic_conventions_1.SemanticAttributes.HTTP_METHOD]: method,
-        [semantic_conventions_1.SemanticAttributes.HTTP_URL]: url,
+        [semanticConventions1.SemanticAttributes.HTTP_METHOD]: method,
+        [semanticConventions1.SemanticAttributes.HTTP_URL]: url,
       },
     }, this.epsParentSpan.currentSpan ? api.trace.setSpan(api.context.active(), this.epsParentSpan.currentSpan) : undefined);
     currentSpan.addEvent('open');

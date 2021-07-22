@@ -27,27 +27,27 @@ const spanAttributeNames = {
   RESPONSE_CONTENT_LENGTH: 'http.response_content_length',
   RESPONSE_CONTENT_LENGTH_EPS: 'http.response_content_length_eps',
   EXCEPTION_MESSAGE: 'exception.message',
-  MESSAGE: 'message'
-}
+  MESSAGE: 'message',
+};
 
 class EpsagonExporter extends CollectorTraceExporter {
   constructor(config, ua) {
     super(config);
     this.config = config;
     this.userAgent = ua;
-    this.formatter = new EpsagonFormatter(config)
-    this.resourceManager = new EpsagonResourceManager(config)
-    this.ipCalcualtor = new EpsagonIPCalculator(config)
+    this.formatter = new EpsagonFormatter(config);
+    this.resourceManager = new EpsagonResourceManager(config);
+    this.ipCalcualtor = new EpsagonIPCalculator(config);
     this.ipCalcualtor.calculate((data) => {
-      this.userAgent.browser.ip = data.ip
-      this.userAgent.browser.country = data.country
-      this.userAgent.browser.regionName = data.regionName
-      this.userAgent.browser.city = data.city
-    })
+      this.userAgent.browser.ip = data.ip;
+      this.userAgent.browser.country = data.country;
+      this.userAgent.browser.regionName = data.regionName;
+      this.userAgent.browser.city = data.city;
+    });
   }
 
   convert(spans) {
-    console.log(spans)
+    console.log(spans);
     try {
       const convertedSpans = super.convert(spans);
       const spansList = EpsagonUtils.getFirstResourceSpan(convertedSpan).instrumentationLibrarySpans;
@@ -150,7 +150,7 @@ class EpsagonExporter extends CollectorTraceExporter {
         });
       });
       rootSubList[rootSpan[type].subPosition].status.code = 2;
-      spansList[rootSpan.doc.position].spans = spansList[rootSpan.doc.position].spans.filter((span) => span.name != rootType.ERROR);
+      spansList[rootSpan.doc.position].spans = spansList[rootSpan.doc.position].spans.filter((span) => span.name !== rootType.ERROR);
     } else {
       /// remove duplicate events and add attrs
       const spanErrs = [];
@@ -158,7 +158,7 @@ class EpsagonExporter extends CollectorTraceExporter {
       spansList[rootSpan.doc.position].spans.map((span) => {
         if (span.name === rootType.ERROR && !spanErrs.includes(EpsagonUtils.getFirstAttribute(span).value.stringValue)) {
           const errAttr = span.attributes.filter((attr) => attr.key === spanAttributeNames.MESSAGE);
-          const spanStringError = errAttr && errAttr.length ? errAttr[0].value.stringValue : rootType.EXCEPTION
+          const spanStringError = errAttr && errAttr.length ? errAttr[0].value.stringValue : rootType.EXCEPTION;
 
           spanErrs.push(spanStringError);
           span.name = `${window.location.pathname}${window.location.hash}`;
@@ -180,15 +180,13 @@ class EpsagonExporter extends CollectorTraceExporter {
     const httpUA = spanAttributes.filter((attr) => attr.key === spanAttributeNames.HOST_USER_AGENT);
     if (httpUA.length) { httpUA[0].key = spanAttributeNames.HOST_REQUEST_USER_AGENT; }
     spanAttributes[attributesLength] = { key: spanAttributeNames.BROWSER_HOST, value: { stringValue: window.location.hostname } };
-    attributesLength++;
+    attributesLength = attributesLength + 1;
     spanAttributes[attributesLength] = { key: spanAttributeNames.BROWSER_PATH, value: { stringValue: window.location.pathname } };
     span.attributes = spanAttributes.filter((attr) => {
       if (this.config.metadataOnly) {
-        return attr.key != span && attr.key != spanAttributeNames.RESPONSE_CONTENT_LENGTH
-      } else {
-        return attr.key != spanAttributeNames.RESPONSE_CONTENT_LENGTH_EPS
+        return attr.key !== span && attr.key !== spanAttributeNames.RESPONSE_CONTENT_LENGTH;
       }
-      
+      return attr.key !== spanAttributeNames.RESPONSE_CONTENT_LENGTH_EPS;
     });
     return attributesLength;
   }

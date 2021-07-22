@@ -22,7 +22,6 @@ class EpsagonDocumentLoadInstrumentation extends DocumentLoadInstrumentation {
   }
 
   _startSpan(spanName, performanceName, entries, parentSpan) {
-    
     // drop document fetch events
     if (spanName == 'documentFetch') {
       return undefined;
@@ -41,10 +40,10 @@ class EpsagonDocumentLoadInstrumentation extends DocumentLoadInstrumentation {
 
   _includes(obj, str) {
     if (!obj) {
-        return false;
+      return false;
     }
     if (typeof obj === 'string' || obj instanceof Array) {
-        return obj.indexOf(str) !== -1    
+      return obj.indexOf(str) !== -1;
     }
     return false;
   }
@@ -52,7 +51,7 @@ class EpsagonDocumentLoadInstrumentation extends DocumentLoadInstrumentation {
   reportError(event) {
     let error;
     event.error ? error = event.error : error = event.reason;
-    if(error && (this._includes(error.message, 'Failed to export with XHR (status: 502)')) || this._includes(error, 'Failed to export with XHR (status: 502)')){
+    if (error && (this._includes(error.message, 'Failed to export with XHR (status: 502)')) || this._includes(error, 'Failed to export with XHR (status: 502)')) {
       return;
     }
     const span = this.tracer.startSpan('error', {

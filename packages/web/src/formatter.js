@@ -1,42 +1,41 @@
 import EpsagonUtils from './utils';
 
 class EpsagonFormatter {
-  constructor(config){
+  constructor(config) {
     this.config = config;
   }
 
   formatRouteChangeSpan(span, spanAttributes, attributesLength, userAgent) {
     span.name = `${window.location.pathname}${window.location.hash}`;
     spanAttributes[attributesLength] = { key: 'http.request.headers.User-Agent', value: { stringValue: JSON.stringify(userAgent).replace(/"([^"]+)":/g, '$1:') } };
-    attributesLength++;
+    attributesLength = attributesLength + 1;
     return attributesLength;
   }
 
   formatDocumentLoadSpan(span, spanAttributes, attributesLength) {
     span.name = `${window.location.pathname}${window.location.hash}`;
     spanAttributes[attributesLength] = { key: 'type', value: { stringValue: 'browser' } };
-    attributesLength++;
+    attributesLength = attributesLength + 1;
     spanAttributes[attributesLength] = { key: 'operation', value: { stringValue: 'page_load' } };
-    attributesLength++;
+    attributesLength = attributesLength + 1;
     return attributesLength;
   }
 
   formatUserInteractionSpan(spanAttributes, attributesLength) {
     spanAttributes[attributesLength] = { key: 'type', value: { stringValue: 'user-interaction' } };
-    attributesLength++;
+    attributesLength = attributesLength + 1;
     const eventType = spanAttributes.filter((attr) => attr.key === ('event_type'));
     spanAttributes[attributesLength] = { key: 'operation', value: { stringValue: eventType[0].value.stringValue } };
-    attributesLength++;
+    attributesLength = attributesLength + 1;
     return attributesLength;
   }
-
 
   formatHttpRequestSpan(span, httpHost, spanAttributes, attributesLength) {
     span.name = httpHost[0].value.stringValue;
     spanAttributes[attributesLength] = { key: 'type', value: { stringValue: 'http' } };
-    attributesLength++;
+    attributesLength = attributesLength + 1;
 
-    if(!this.config.metadataOnly){
+    if (!this.config.metadataOnly) {
       const httpContentLength = spanAttributes.filter((attr) => attr.key === 'http.response_content_length');
       const epsHttpContentLength = spanAttributes.filter((attr) => attr.key === 'http.response_content_length_eps');
       if (epsHttpContentLength.length > 0) {

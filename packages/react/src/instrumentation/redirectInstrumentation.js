@@ -19,7 +19,7 @@ function ReactRedirectInstrumentation(history, tracer, parentSpan) {
   
     history.listen((location, action) => {
       let currentPath = `${location.pathname}${window.location.hash}`
-      if (action && (action.toLowerCase() === 'push' || action.toLowerCase() === 'pop') && (parentSpan.path != currentPath)) {
+      if (action && (action.toLowerCase() === 'push' || action.toLowerCase() === 'pop') && (parentSpan.path !== currentPath)) {
           let span = startSpan(parentSpan.path, location.pathname)
           parentSpan.currentSpan = span;
           if(location.hash && location.hash.length){span.setAttribute('hash', location.hash)};

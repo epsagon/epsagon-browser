@@ -14,10 +14,9 @@ const { registerInstrumentations } = require('@opentelemetry/instrumentation');
 let existingTracer;
 let epsSpan;
 const DEFAULT_APP_NAME = 'Epsagon Application'
+const PAGE_LOAD_TIMEOUT = 30000
 
 class EpsagonSpan {
-
-  timeout = 30000
 
   constructor(tracer) {
     let span = tracer.startSpan('epsagon_init', {
@@ -35,7 +34,7 @@ class EpsagonSpan {
   }
 
   get currentSpan() {
-    if(this._time != null && this._time + this.timeout >= Date.now()){
+    if(this._time !== null && this._time + PAGE_LOAD_TIMEOUT >= Date.now()){
       return this._currentSpan
     }else {
       this.currentSpan = null

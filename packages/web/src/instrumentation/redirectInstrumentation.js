@@ -8,7 +8,7 @@ class EpsagonRedirectInstrumentation{
         this.tracer = tracer;
         setInterval(()=>{
             let currentPath = `${window.location.pathname}${window.location.hash}`;
-            if (this.parentSpan.path && currentPath != parentSpan.path){
+            if (this.parentSpan.path && currentPath !== parentSpan.path){
                 this.createRouteChangeSpan(this.parentSpan.path, currentPath);
                 this.parentSpan.path = currentPath;
             }
