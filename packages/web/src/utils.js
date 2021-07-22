@@ -10,7 +10,7 @@ class EpsagonUtils {
         if (companyId) span.setAttribute('company.id', parentSpan.identifyFields.companyId);
         if (companyName) span.setAttribute('company.name', parentSpan.identifyFields.companyName);
     }
-    if(parentSpan.tags){
+    if (parentSpan.tags){
         for(let key in parentSpan.tags){
             span.setAttribute(key, parentSpan.tags[key]);
         }
@@ -45,6 +45,20 @@ class EpsagonUtils {
     }
 
     return attributesLength;
+  }
+
+  static getFirstAttribute(span) {
+    if (span && span.attributes && span.attributes.length) {
+      return span.attributes[0];
+    }
+    return null;
+  }
+
+  static getFirstResourceSpan(span) {
+    if (span && span.resourceSpans && span.resourceSpans.length) {
+      return span.resourceSpans[0];
+    }
+    return null;
   }
 }
 

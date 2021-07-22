@@ -1,42 +1,56 @@
 import { CollectorTraceExporter } from '@opentelemetry/exporter-collector';
 import EpsagonFormatter from './formatter';
+import EpsagonResourceManager from './resource-manager';
+import EpsagonIPCalculator from './ip-calculator';
+import EpsagonUtils from './utils';
 
 const rootType = {
   EPS: 'epsagon_init',
   DOC: 'document_load',
   REDIR: 'redirect',
+  ROOT_TYPE_DOC: 'doc',
+  ERROR: 'error',
+  EXCEPTION: 'exception',
 };
+
+const spanAttributeNames = {
+  BROWSER_HOST: 'browser.host',
+  BROWSER_PATH: 'browser.path',
+  HOST_HEADER: 'http.host',
+  HOST_USER_AGENT: 'http.user_agent',
+  HOST_REQUEST_USER_AGENT: 'http.request.headers.User-Agent',
+  DOCUMENT_LOAD: 'document-load',
+  DOCUMENT_LOAD_SPAN_NAME: 'documentLoad',
+  REACT_COMPONENT_NAME: 'react_component_name',
+  USER_INTERACTION: 'user-interaction',
+  ROUTE_CHANGE: 'route_change',
+  RESPONSE_CONTENT_LENGTH: 'http.response_content_length',
+  RESPONSE_CONTENT_LENGTH_EPS: 'http.response_content_length_eps',
+  EXCEPTION_MESSAGE: 'exception.message',
+  MESSAGE: 'message'
+}
+
 class EpsagonExporter extends CollectorTraceExporter {
   constructor(config, ua) {
     super(config);
     this.config = config;
     this.userAgent = ua;
     this.formatter = new EpsagonFormatter(config)
-
-    // start requesting for ip
-    fetch('https://api.ipify.org?format=json', {
-      eps: true, // added to negate span creation
-      })
-      .then(response => response.json())
-      .then(data => {
-        this.userAgent.browser.ip = data.ip
-        fetch(`http://ip-api.com/json/${data.ip}?fields=16409`, {
-          eps: true, // added to negate span creation
-          })
-          .then(response2 => response2.json())
-          .then(data2 => {
-              this.userAgent.browser.country = data2.country
-              this.userAgent.browser.regionName = data2.regionName
-              this.userAgent.browser.city = data2.city
-            });
-      });
+    this.resourceManager = new EpsagonResourceManager(config)
+    this.ipCalcualtor = new EpsagonIPCalculator(config)
+    this.ipCalcualtor.calculate((data) => {
+      this.userAgent.browser.ip = data.ip
+      this.userAgent.browser.country = data.country
+      this.userAgent.browser.regionName = data.regionName
+      this.userAgent.browser.city = data.city
+    })
   }
 
   convert(spans) {
     console.log(spans)
     try {
       const convertedSpans = super.convert(spans);
-      const spansList = convertedSpans.resourceSpans[0].instrumentationLibrarySpans;
+      const spansList = EpsagonUtils.getFirstResourceSpan(convertedSpan).instrumentationLibrarySpans;
       const rootSpan = {
         rootType: rootType.EPS,
         eps: {},
@@ -55,24 +69,24 @@ class EpsagonExporter extends CollectorTraceExporter {
           const spanAttributes = span.attributes;
           let attributesLength = spanAttributes.length;
 
-          if (span.name === 'epsagon_init') {
+          if (span.name === rootType.EPS) {
             rootSpan.eps.position = spanIndex;
             rootSpan.eps.subPosition = spanSubIndex;
             rootSpan.eps.spanId = span.spanId;
             attributesLength = this.formatter.formatDocumentLoadSpan(span, spanAttributes, attributesLength);
           }
-          if (span.name === 'error') {
-            if (span.attributes[0]) {
+          if (span.name === rootType.ERROR) {
+            if (span.attributes && span.attributes.length) {
               rootSpan.doc.position = spanIndex;
-              errSpan.messages.push(span.attributes[0].value.stringValue);
+              errSpan.messages.push(EpsagonUtils.getFirstAttribute(span).value.stringValue);
             }
             break;
           }
 
-          const httpHost = spanAttributes.filter((attr) => attr.key === 'http.host');
-          const userInteraction = spanAttributes.filter((attr) => attr.value.stringValue === 'user-interaction');
-          const documentLoad = spanAttributes.filter((attr) => attr.value.stringValue === 'document-load');
-          const reactUpdates = spanAttributes.filter((attr) => attr.key === 'react_component_name');
+          const httpHost = spanAttributes.filter((attr) => attr.key === spanAttributeNames.HOST_HEADER);
+          const userInteraction = spanAttributes.filter((attr) => attr.value.stringValue === spanAttributeNames.USER_INTERACTION);
+          const documentLoad = spanAttributes.filter((attr) => attr.value.stringValue === spanAttributeNames.DOCUMENT_LOAD);
+          const reactUpdates = spanAttributes.filter((attr) => attr.key === spanAttributeNames.REACT_COMPONENT_NAME);
 
           if (httpHost.length > 0) {
             attributesLength = this.formatter.formatHttpRequestSpan(span, httpHost, spanAttributes, attributesLength);
@@ -82,7 +96,7 @@ class EpsagonExporter extends CollectorTraceExporter {
             rootSpan.doc.position = spanIndex;
 
             // replace root span with document load
-            if (span.name === 'documentLoad') {
+            if (span.name === spanAttributeNames.DOCUMENT_LOAD_SPAN_NAME) {
               rootSpan.rootType = rootType.DOC;
               rootSpan.eps.remove = true;
               rootSpan.doc.subPosition = spanSubIndex;
@@ -90,7 +104,7 @@ class EpsagonExporter extends CollectorTraceExporter {
             }
 
             attributesLength = this.formatter.formatDocumentLoadSpan(span, spanAttributes, attributesLength);
-          } else if (span.name === 'route_change') {
+          } else if (span.name === spanAttributeNames.ROUTE_CHANGE) {
             rootSpan.rootType = rootType.REDIR;
             attributesLength = this.formatter.formatRouteChangeSpan(span, spanAttributes, attributesLength, this.userAgent);
             rootSpan.redirect.position = spanIndex;
@@ -112,9 +126,7 @@ class EpsagonExporter extends CollectorTraceExporter {
         spansList.splice(rootSpan.eps.position, 1);
       }
 
-      this.addResourceAttrs(convertedSpans);
-
-      return convertedSpans;
+      return resourceManager.addResourceAttrs(convertedSpans);
     } catch (err) {
       console.log('error converting and exporting', err);
     }
@@ -123,7 +135,7 @@ class EpsagonExporter extends CollectorTraceExporter {
   handleErrors(errSpan, spansList, rootSpan) {
     if (rootSpan.rootType === rootType.REDIR || rootSpan.rootType === rootType.DOC) {
       let type;
-      rootSpan.rootType === rootType.REDIR ? type = 'redirect' : type = 'doc';
+      rootSpan.rootType === rootType.REDIR ? type = rootType.REDIR : type = rootType.ROOT_TYPE_DOC;
       const rootSubList = spansList[rootSpan[type].position].spans;
       const rootSubPos = rootSpan[type].subPosition;
 
@@ -131,30 +143,29 @@ class EpsagonExporter extends CollectorTraceExporter {
       const s = new Set(errSpan.messages);
       Array.from(s.values()).map((err) => {
         rootSubList[rootSubPos].events.unshift({
-          name: 'exception',
+          name: rootType.EXCEPTION,
           attributes: [
-            { key: 'exception.message', value: { stringValue: err } },
+            { key: spanAttributeNames.EXCEPTION_MESSAGE, value: { stringValue: err } },
           ],
         });
       });
       rootSubList[rootSpan[type].subPosition].status.code = 2;
-      spansList[rootSpan.doc.position].spans = spansList[rootSpan.doc.position].spans.filter((span) => span.name != 'error');
+      spansList[rootSpan.doc.position].spans = spansList[rootSpan.doc.position].spans.filter((span) => span.name != rootType.ERROR);
     } else {
       /// remove duplicate events and add attrs
       const spanErrs = [];
       const finalSpans = [];
       spansList[rootSpan.doc.position].spans.map((span) => {
-        if (span.name === 'error' && !spanErrs.includes(span.attributes[0].value.stringValue)) {
-          const errAttr = span.attributes.filter((attr) => attr.key === 'message');
-          const spanStringError = errAttr && errAttr.length ? errAttr[0].value.stringValue : 'exception'
+        if (span.name === rootType.ERROR && !spanErrs.includes(EpsagonUtils.getFirstAttribute(span).value.stringValue)) {
+          const errAttr = span.attributes.filter((attr) => attr.key === spanAttributeNames.MESSAGE);
+          const spanStringError = errAttr && errAttr.length ? errAttr[0].value.stringValue : rootType.EXCEPTION
 
           spanErrs.push(spanStringError);
-          const attributesLength = this.addFinalGenericSpanAttrs(span.attributes, span.attributes.length, span);
           span.name = `${window.location.pathname}${window.location.hash}`;
           span.events.unshift({
-            name: 'exception',
+            name: rootType.EXCEPTION,
             attributes: [
-              { key: 'exception.message', value: { stringValue: spanStringError } },
+              { key: spanAttributeNames.EXCEPTION_MESSAGE, value: { stringValue: spanStringError } },
             ],
           });
           finalSpans.push(span);
@@ -166,62 +177,20 @@ class EpsagonExporter extends CollectorTraceExporter {
 
   addFinalGenericSpanAttrs(spanAttributes, attributesLength, span) {
     // replace any user agent keys with eps name convention
-    const httpUA = spanAttributes.filter((attr) => attr.key === 'http.user_agent');
-    if (httpUA.length > 0) { httpUA[0].key = 'http.request.headers.User-Agent'; }
-    spanAttributes[attributesLength] = { key: 'browser.host', value: { stringValue: window.location.hostname } };
+    const httpUA = spanAttributes.filter((attr) => attr.key === spanAttributeNames.HOST_USER_AGENT);
+    if (httpUA.length) { httpUA[0].key = spanAttributeNames.HOST_REQUEST_USER_AGENT; }
+    spanAttributes[attributesLength] = { key: spanAttributeNames.BROWSER_HOST, value: { stringValue: window.location.hostname } };
     attributesLength++;
-    spanAttributes[attributesLength] = { key: 'browser.path', value: { stringValue: window.location.pathname } };
+    spanAttributes[attributesLength] = { key: spanAttributeNames.BROWSER_PATH, value: { stringValue: window.location.pathname } };
     span.attributes = spanAttributes.filter((attr) => {
-      if(this.config.metadataOnly){
-        return attr.key != 'http.response_content_length_eps' && attr.key != 'http.response_content_length'
-      }else{
-        return attr.key != 'http.response_content_length_eps'
+      if (this.config.metadataOnly) {
+        return attr.key != span && attr.key != spanAttributeNames.RESPONSE_CONTENT_LENGTH
+      } else {
+        return attr.key != spanAttributeNames.RESPONSE_CONTENT_LENGTH_EPS
       }
       
     });
     return attributesLength;
-  }
-
-  addResourceAttrs(convertedSpans) {
-    const appName = this.config.serviceName;
-    let resourcesLength = convertedSpans.resourceSpans[0].resource.attributes.length;
-
-    convertedSpans.resourceSpans[0].resource.attributes[resourcesLength] = { key: 'application', value: { stringValue: appName } };
-    resourcesLength++;
-    convertedSpans.resourceSpans[0].resource.attributes[resourcesLength] = { key: 'browser.name', value: { stringValue: this.userAgent.browser.name } };
-    resourcesLength++;
-    convertedSpans.resourceSpans[0].resource.attributes[resourcesLength] = { key: 'browser.version', value: { stringValue: this.userAgent.browser.version } };
-    resourcesLength++;
-    convertedSpans.resourceSpans[0].resource.attributes[resourcesLength] = { key: 'browser.operating_system', value: { stringValue: this.userAgent.os.name } };
-    resourcesLength++;
-    convertedSpans.resourceSpans[0].resource.attributes[resourcesLength] = { key: 'browser.operating_system_version', value: { stringValue: this.userAgent.os.version } };
-    resourcesLength++;
-
-    //ADD IP IF EXISTS
-    if (this.userAgent.browser.ip) {
-      convertedSpans.resourceSpans[0].resource.attributes[resourcesLength] = { key: 'user.ip', value: { stringValue: this.userAgent.browser.ip } };
-      resourcesLength++;
-    }
-    //ADD COUNTRY IF EXISTS
-    if (this.userAgent.browser.country) {
-      convertedSpans.resourceSpans[0].resource.attributes[resourcesLength] = { key: 'user.country', value: { stringValue: this.userAgent.browser.country } };
-      resourcesLength++;
-    }
-
-    //ADD CITY IF EXISTS
-    if (this.userAgent.browser.city) {
-      convertedSpans.resourceSpans[0].resource.attributes[resourcesLength] = { key: 'user.city', value: { stringValue: this.userAgent.browser.city } };
-      resourcesLength++;
-    }
-
-    //ADD REGION IF EXISTS
-    if (this.userAgent.browser.regionName) {
-      convertedSpans.resourceSpans[0].resource.attributes[resourcesLength] = { key: 'user.region', value: { stringValue: this.userAgent.browser.regionName } };
-      resourcesLength++;
-    }
-
-    // remove undefined service.name attr
-    convertedSpans.resourceSpans[0].resource.attributes = convertedSpans.resourceSpans[0].resource.attributes.filter((attr) => attr.key != ['service.name']);
   }
 }
 
