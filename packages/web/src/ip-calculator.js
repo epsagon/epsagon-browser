@@ -1,4 +1,4 @@
-const API_KEY = 'PfW1i6IVetxP8Xu'
+const API_KEY = 'PfW1i6IVetxP8Xu';
 
 class EpsagonIPCalculator {
   calculate(callback) {
