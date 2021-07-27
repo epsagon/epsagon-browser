@@ -17,7 +17,10 @@ class EpsagonUtils {
     }
   }
 
-  static parseURL(httpUrl, span, spanAttributes, attributesLength, metadataOnly) {
+  static parseURL(httpUrl, span, _spanAttributes, _attributesLength, metadataOnly) {
+    let attributesLength = _attributesLength;
+    const spanAttributes = _spanAttributes;
+
     if (httpUrl.indexOf('?') < 0 && httpUrl.indexOf(';') < 0) {
       const path = httpUrl.substring(httpUrl.indexOf(span.name) + span.name.length);
       spanAttributes[attributesLength] = { key: 'http.request.path', value: { stringValue: path } };
@@ -44,7 +47,10 @@ class EpsagonUtils {
       }
     }
 
-    return attributesLength;
+    return {
+      attributesLength,
+      spanAttributes,
+    };
   }
 
   static getFirstAttribute(span) {

@@ -38,9 +38,11 @@ class EpsagonDocumentLoadInstrumentation extends DocumentLoadInstrumentation {
   }
 
   // drop resource fetch spans
+  /* eslint-disable class-methods-use-this */
   _initResourceSpan() {
   }
 
+  /* eslint-disable class-methods-use-this */
   _includes(obj, str) {
     if (!obj) {
       return false;
@@ -54,7 +56,8 @@ class EpsagonDocumentLoadInstrumentation extends DocumentLoadInstrumentation {
   reportError(event) {
     let error;
     event.error ? error = event.error : error = event.reason;
-    if (error && (this._includes(error.message, 'Failed to export with XHR (status: 502)')) || this._includes(error, 'Failed to export with XHR (status: 502)')) {
+    const failedToExportError = (this._includes(error.message, 'Failed to export with XHR (status: 502)')) || this._includes(error, 'Failed to export with XHR (status: 502)');
+    if (error && failedToExportError) {
       return;
     }
     const span = this.tracer.startSpan('error', {

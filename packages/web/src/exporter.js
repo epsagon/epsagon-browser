@@ -75,7 +75,12 @@ class EpsagonExporter extends CollectorTraceExporter {
             rootSpan.eps.position = spanIndex;
             rootSpan.eps.subPosition = spanSubIndex;
             rootSpan.eps.spanId = span.spanId;
-            attributesLength = this.formatter.formatDocumentLoadSpan(span, spanAttributes, attributesLength);
+            const formattedSpan = this.formatter.formatDocumentLoadSpan();
+            span.name = formattedSpan.name;
+            spanAttributes[attributesLength] = formattedSpan.browser;
+            attributesLength += 1;
+            spanAttributes[attributesLength] = formattedSpan.operation;
+            attributesLength += 1;
           }
           if (span.name === rootType.ERROR) {
             if (span.attributes && span.attributes.length) {
@@ -91,9 +96,15 @@ class EpsagonExporter extends CollectorTraceExporter {
           const reactUpdates = spanAttributes.filter((attr) => attr.key === spanAttributeNames.REACT_COMPONENT_NAME);
 
           if (httpHost.length > 0) {
-            attributesLength = this.formatter.formatHttpRequestSpan(span, httpHost, spanAttributes, attributesLength);
+            const formattedHttpRequestSpan = this.formatter.formatHttpRequestSpan(span, httpHost, spanAttributes, attributesLength);
+            spanAttributes = formattedHttpRequestSpan.spanAttributes;
+            attributesLength = formattedHttpRequestSpan.attributesLength;
           } else if (userInteraction.length > 0) {
-            attributesLength = this.formatter.formatUserInteractionSpan(spanAttributes, attributesLength);
+            const formattedSpan = this.formatter.formatUserInteractionSpan(spanAttributes, attributesLength);
+            spanAttributes[attributesLength] = formattedSpan.userInteraction;
+            attributesLength += 1;
+            spanAttributes[attributesLength] = formattedSpan.operation;
+            attributesLength += 1;
           } else if (documentLoad.length > 0 || reactUpdates.length > 0) {
             rootSpan.doc.position = spanIndex;
 
@@ -105,10 +116,20 @@ class EpsagonExporter extends CollectorTraceExporter {
               rootSpan.doc.parent = span.parentSpanId;
             }
 
-            attributesLength = this.formatter.formatDocumentLoadSpan(span, spanAttributes, attributesLength);
+            const formattedSpan = this.formatter.formatDocumentLoadSpan();
+            span.name = formattedSpan.name;
+            spanAttributes[attributesLength] = formattedSpan.browser;
+            attributesLength += 1;
+            spanAttributes[attributesLength] = formattedSpan.operation;
+            attributesLength += 1;
           } else if (span.name === spanAttributeNames.ROUTE_CHANGE) {
             rootSpan.rootType = rootType.REDIR;
-            attributesLength = this.formatter.formatRouteChangeSpan(span, spanAttributes, attributesLength, this.userAgent);
+
+            const formattedSpan = this.formatter.formatRouteChangeSpan(this.userAgent);
+            span.name = formattedSpan.name;
+            spanAttributes[attributesLength] = formattedSpan.obj;
+            attributesLength += 1;
+
             rootSpan.redirect.position = spanIndex;
             rootSpan.redirect.subPosition = spanSubIndex;
           }
