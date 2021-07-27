@@ -68,7 +68,7 @@ class EpsagonExporter extends CollectorTraceExporter {
 
         for (const spanSubIndex in spanSubList) {
           const span = spanSubList[spanSubIndex];
-          const spanAttributes = span.attributes;
+          let spanAttributes = span.attributes;
           let attributesLength = spanAttributes.length;
 
           if (span.name === rootType.EPS) {
@@ -186,14 +186,15 @@ class EpsagonExporter extends CollectorTraceExporter {
 
           spanErrs.push(spanStringError);
           /* eslint-disable no-undef */
-          span.name = `${window.location.pathname}${window.location.hash}`;
-          span.events.unshift({
+          let newSpan = span;
+          newSpan.name = `${window.location.pathname}${window.location.hash}`;
+          newSpan.events.unshift({
             name: rootType.EXCEPTION,
             attributes: [
               { key: spanAttributeNames.EXCEPTION_MESSAGE, value: { stringValue: spanStringError } },
             ],
           });
-          finalSpans.push(span);
+          finalSpans.push(newSpan);
         }
       });
       spansList[rootSpan.doc.position].spans = finalSpans;
