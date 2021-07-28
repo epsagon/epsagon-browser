@@ -128,7 +128,7 @@ class EpsagonExporter extends CollectorTraceExporter {
         spansList.splice(rootSpan.eps.position, 1);
       }
 
-      return this.resourceManager.addResourceAttrs(convertedSpans);
+      return this.resourceManager.addResourceAttrs(convertedSpans, this.userAgent);
     } catch (err) {
       console.log('error converting and exporting', err);
       return null;
