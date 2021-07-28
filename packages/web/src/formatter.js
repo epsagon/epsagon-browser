@@ -6,31 +6,28 @@ class EpsagonFormatter {
     this.config = config;
   }
 
-  formatRouteChangeSpan(span, spanAttributes, attributesLength, userAgent) {
+  formatRouteChangeSpan(userAgent) {
     /* eslint-disable no-undef */
-    span.name = `${window.location.pathname}${window.location.hash}`;
-    spanAttributes[attributesLength] = { key: 'http.request.headers.User-Agent', value: { stringValue: JSON.stringify(userAgent).replace(/"([^"]+)":/g, '$1:') } };
-    attributesLength += 1;
-    return attributesLength;
+    return {
+      name: `${window.location.pathname}${window.location.hash}`,
+      obj: { key: 'http.request.headers.User-Agent', value: { stringValue: JSON.stringify(userAgent).replace(/"([^"]+)":/g, '$1:') } },
+    };
   }
 
-  formatDocumentLoadSpan(span, spanAttributes, attributesLength) {
-    /* eslint-disable no-undef */
-    span.name = `${window.location.pathname}${window.location.hash}`;
-    spanAttributes[attributesLength] = { key: 'type', value: { stringValue: 'browser' } };
-    attributesLength += 1;
-    spanAttributes[attributesLength] = { key: 'operation', value: { stringValue: 'page_load' } };
-    attributesLength += 1;
-    return attributesLength;
+  formatDocumentLoadSpan() {
+    return {
+      name: `${window.location.pathname}${window.location.hash}`,
+      browser: { key: 'type', value: { stringValue: 'browser' } },
+      operation: { key: 'operation', value: { stringValue: 'page_load' } },
+    };
   }
 
-  formatUserInteractionSpan(spanAttributes, attributesLength) {
-    spanAttributes[attributesLength] = { key: 'type', value: { stringValue: 'user-interaction' } };
-    attributesLength += 1;
+  formatUserInteractionSpan(spanAttributes) {
     const eventType = spanAttributes.filter((attr) => attr.key === ('event_type'));
-    spanAttributes[attributesLength] = { key: 'operation', value: { stringValue: eventType[0].value.stringValue } };
-    attributesLength += 1;
-    return attributesLength;
+    return {
+      operation: { key: 'operation', value: { stringValue: eventType[0].value.stringValue } },
+      userInteraction: { key: 'type', value: { stringValue: 'user-interaction' } },
+    };
   }
 
   formatHttpRequestSpan(span, httpHost, spanAttributes, attributesLength) {
@@ -48,9 +45,7 @@ class EpsagonFormatter {
 
     const httpUrlAttr = spanAttributes.filter((attr) => attr.key === 'http.url');
     const httpUrl = httpUrlAttr[0].value.stringValue;
-    attributesLength = EpsagonUtils.parseURL(httpUrl, span, spanAttributes, attributesLength, this.config.metadataOnly);
-
-    return attributesLength;
+    return EpsagonUtils.parseURL(httpUrl, span, spanAttributes, attributesLength, this.config.metadataOnly);
   }
 }
 

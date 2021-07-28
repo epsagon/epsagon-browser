@@ -45,7 +45,7 @@ class EpsagonXMLHttpRequestInstrumentation extends XMLHttpRequestInstrumentation
       span.setAttribute('http.response.body', responseBody.substring(0, 5000));
       const resHeadersArr = xhrMem.xhrInstance.getAllResponseHeaders().split('\r\n');
       if (resHeadersArr.length > 0) {
-        const headersObj = resHeadersArr.reduce((acc, current, i) => {
+        const headersObj = resHeadersArr.reduce((acc, current) => {
           const parts = current.split(': ');
           acc[parts[0]] = parts[1];
           return acc;
