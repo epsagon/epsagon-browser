@@ -65,12 +65,12 @@ class EpsagonFetchInstrumentation extends FetchInstrumentation {
                   if (done) {
                     if (plugin.globalOptions && !plugin.globalOptions.metadataOnly) {
                       const resHeaders = [];
-                      for (const entry of resClone2.headers.entries()) {
+                      Object.entries(resClone2.headers).forEach((entry) => {
                         if (entry[0] === 'content-length') {
-                          span.setAttribute('http.response_content_length_eps', parseInt(entry[1]));
+                          span.setAttribute('http.response_content_length_eps', parseInt(entry[1], 10));
                         }
                         resHeaders.push(entry);
-                      }
+                      });
                       span.setAttribute('http.response.body', (await resClone2.text()).substring(0, 5000));
                       if (resHeaders.length > 0) {
                         span.setAttribute('http.response.headers', JSON.stringify(resHeaders));
@@ -121,7 +121,7 @@ class EpsagonFetchInstrumentation extends FetchInstrumentation {
   _createSpan(url, options = {}) {
     if (core.isUrlIgnored(url, this._getConfig().ignoreUrls)) {
       api.diag.debug('ignoring span as url matches ignored url');
-      return;
+      return undefined;
     }
     const method = (options.method || 'GET').toUpperCase();
     const spanName = `HTTP ${method}`;

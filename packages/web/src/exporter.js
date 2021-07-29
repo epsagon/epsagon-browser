@@ -39,8 +39,7 @@ class EpsagonExporter extends CollectorTraceExporter {
     this.userAgent = ua;
     this.formatter = new EpsagonFormatter(config);
     this.resourceManager = new EpsagonResourceManager(config);
-    this.ipCalcualtor = new EpsagonIPCalculator(config);
-    this.ipCalcualtor.calculate((data) => {
+    EpsagonIPCalculator.calculate((data) => {
       this.userAgent.browser.ip = data.ip;
       this.userAgent.browser.country = data.country;
       this.userAgent.browser.regionName = data.regionName;
@@ -52,7 +51,7 @@ class EpsagonExporter extends CollectorTraceExporter {
     console.log(spans);
     try {
       const convertedSpans = super.convert(spans);
-      const spansList = EpsagonUtils.getFirstResourceSpan(convertedSpans).instrumentationLibrarySpans;
+      let spansList = EpsagonUtils.getFirstResourceSpan(convertedSpans).instrumentationLibrarySpans;
       const rootSpan = {
         rootType: rootType.EPS,
         eps: {},
@@ -63,83 +62,90 @@ class EpsagonExporter extends CollectorTraceExporter {
         messages: [],
       };
 
-      for (const spanIndex in spansList) {
+      Object.keys(spansList).forEach((spanIndex) => {
         const spanSubList = spansList[spanIndex].spans;
 
+        /* eslint-disable no-restricted-syntax */
         for (const spanSubIndex in spanSubList) {
-          const span = spanSubList[spanSubIndex];
-          let spanAttributes = span.attributes;
-          let attributesLength = spanAttributes.length;
+          if (spanSubList[spanSubIndex]) {
+            let span = spanSubList[spanSubIndex];
+            let spanAttributes = span.attributes;
+            let attributesLength = spanAttributes.length;
 
-          if (span.name === rootType.EPS) {
-            rootSpan.eps.position = spanIndex;
-            rootSpan.eps.subPosition = spanSubIndex;
-            rootSpan.eps.spanId = span.spanId;
-            const formattedSpan = this.formatter.formatDocumentLoadSpan();
-            span.name = formattedSpan.name;
-            spanAttributes[attributesLength] = formattedSpan.browser;
-            attributesLength += 1;
-            spanAttributes[attributesLength] = formattedSpan.operation;
-            attributesLength += 1;
-          }
-          if (span.name === rootType.ERROR) {
-            if (span.attributes && span.attributes.length) {
+            if (span.name === rootType.EPS) {
+              rootSpan.eps.position = spanIndex;
+              rootSpan.eps.subPosition = spanSubIndex;
+              rootSpan.eps.spanId = span.spanId;
+              const formattedSpan = EpsagonFormatter.formatDocumentLoadSpan();
+              span.name = formattedSpan.name;
+              spanAttributes[attributesLength] = formattedSpan.browser;
+              attributesLength += 1;
+              spanAttributes[attributesLength] = formattedSpan.operation;
+              attributesLength += 1;
+            }
+            if (span.name === rootType.ERROR) {
+              if (span.attributes && span.attributes.length) {
+                rootSpan.doc.position = spanIndex;
+                errSpan.messages.push(EpsagonUtils.getFirstAttribute(span).value.stringValue);
+              }
+              break;
+            }
+
+            const httpHost = spanAttributes.filter((attr) => attr.key === spanAttributeNames.HOST_HEADER);
+            const userInteraction = spanAttributes.filter((attr) => attr.value.stringValue === spanAttributeNames.USER_INTERACTION);
+            const documentLoad = spanAttributes.filter((attr) => attr.value.stringValue === spanAttributeNames.DOCUMENT_LOAD);
+            const reactUpdates = spanAttributes.filter((attr) => attr.key === spanAttributeNames.REACT_COMPONENT_NAME);
+
+            if (httpHost.length > 0) {
+              const formattedHttpRequestSpan = this.formatter.formatHttpRequestSpan(span, httpHost, spanAttributes, attributesLength);
+              spanAttributes = formattedHttpRequestSpan.spanAttributes;
+              attributesLength = formattedHttpRequestSpan.attributesLength;
+              span = formattedHttpRequestSpan.span;
+            } else if (userInteraction.length > 0) {
+              const formattedSpan = EpsagonFormatter.formatUserInteractionSpan(spanAttributes, attributesLength);
+              spanAttributes[attributesLength] = formattedSpan.userInteraction;
+              attributesLength += 1;
+              spanAttributes[attributesLength] = formattedSpan.operation;
+              attributesLength += 1;
+            } else if (documentLoad.length > 0 || reactUpdates.length > 0) {
               rootSpan.doc.position = spanIndex;
-              errSpan.messages.push(EpsagonUtils.getFirstAttribute(span).value.stringValue);
-            }
-            break;
-          }
 
-          const httpHost = spanAttributes.filter((attr) => attr.key === spanAttributeNames.HOST_HEADER);
-          const userInteraction = spanAttributes.filter((attr) => attr.value.stringValue === spanAttributeNames.USER_INTERACTION);
-          const documentLoad = spanAttributes.filter((attr) => attr.value.stringValue === spanAttributeNames.DOCUMENT_LOAD);
-          const reactUpdates = spanAttributes.filter((attr) => attr.key === spanAttributeNames.REACT_COMPONENT_NAME);
+              // replace root span with document load
+              if (span.name === spanAttributeNames.DOCUMENT_LOAD_SPAN_NAME) {
+                rootSpan.rootType = rootType.DOC;
+                rootSpan.eps.remove = true;
+                rootSpan.doc.subPosition = spanSubIndex;
+                rootSpan.doc.parent = span.parentSpanId;
+              }
 
-          if (httpHost.length > 0) {
-            const formattedHttpRequestSpan = this.formatter.formatHttpRequestSpan(span, httpHost, spanAttributes, attributesLength);
-            spanAttributes = formattedHttpRequestSpan.spanAttributes;
-            attributesLength = formattedHttpRequestSpan.attributesLength;
-          } else if (userInteraction.length > 0) {
-            const formattedSpan = this.formatter.formatUserInteractionSpan(spanAttributes, attributesLength);
-            spanAttributes[attributesLength] = formattedSpan.userInteraction;
-            attributesLength += 1;
-            spanAttributes[attributesLength] = formattedSpan.operation;
-            attributesLength += 1;
-          } else if (documentLoad.length > 0 || reactUpdates.length > 0) {
-            rootSpan.doc.position = spanIndex;
+              const formattedSpan = EpsagonFormatter.formatDocumentLoadSpan();
+              span.name = formattedSpan.name;
+              spanAttributes[attributesLength] = formattedSpan.browser;
+              attributesLength += 1;
+              spanAttributes[attributesLength] = formattedSpan.operation;
+              attributesLength += 1;
+            } else if (span.name === spanAttributeNames.ROUTE_CHANGE) {
+              rootSpan.rootType = rootType.REDIR;
 
-            // replace root span with document load
-            if (span.name === spanAttributeNames.DOCUMENT_LOAD_SPAN_NAME) {
-              rootSpan.rootType = rootType.DOC;
-              rootSpan.eps.remove = true;
-              rootSpan.doc.subPosition = spanSubIndex;
-              rootSpan.doc.parent = span.parentSpanId;
+              const formattedSpan = EpsagonFormatter.formatRouteChangeSpan(this.userAgent);
+              span.name = formattedSpan.name;
+              spanAttributes[attributesLength] = formattedSpan.obj;
+              attributesLength += 1;
+
+              rootSpan.redirect.position = spanIndex;
+              rootSpan.redirect.subPosition = spanSubIndex;
             }
 
-            const formattedSpan = this.formatter.formatDocumentLoadSpan();
-            span.name = formattedSpan.name;
-            spanAttributes[attributesLength] = formattedSpan.browser;
-            attributesLength += 1;
-            spanAttributes[attributesLength] = formattedSpan.operation;
-            attributesLength += 1;
-          } else if (span.name === spanAttributeNames.ROUTE_CHANGE) {
-            rootSpan.rootType = rootType.REDIR;
-
-            const formattedSpan = this.formatter.formatRouteChangeSpan(this.userAgent);
-            span.name = formattedSpan.name;
-            spanAttributes[attributesLength] = formattedSpan.obj;
-            attributesLength += 1;
-
-            rootSpan.redirect.position = spanIndex;
-            rootSpan.redirect.subPosition = spanSubIndex;
+            const finalAttrs = this.addFinalGenericSpanAttrs(spanAttributes, attributesLength, span);
+            attributesLength = finalAttrs.attributesLength;
+            span = finalAttrs.span;
+            spanAttributes = finalAttrs.spanAttributes;
           }
-
-          attributesLength = this.addFinalGenericSpanAttrs(spanAttributes, attributesLength, span);
         }
-      }
+      });
 
       if (errSpan.messages.length > 0) {
-        this.handleErrors(errSpan, spansList, rootSpan);
+        spansList = EpsagonExporter.handleErrors(errSpan, spansList, rootSpan);
       }
 
       if (rootSpan.eps.remove && rootSpan.doc.parent === rootSpan.eps.spanId) {
@@ -156,16 +162,16 @@ class EpsagonExporter extends CollectorTraceExporter {
     }
   }
 
-  handleErrors(errSpan, spansList, rootSpan) {
+  static handleErrors(errSpan, _spansList, rootSpan) {
+    const spansList = _spansList;
     if (rootSpan.rootType === rootType.REDIR || rootSpan.rootType === rootType.DOC) {
-      let type;
-      rootSpan.rootType === rootType.REDIR ? type = rootType.REDIR : type = rootType.ROOT_TYPE_DOC;
+      const type = rootSpan.rootType === rootType.REDIR ? rootType.REDIR : rootType.ROOT_TYPE_DOC;
       const rootSubList = spansList[rootSpan[type].position].spans;
       const rootSubPos = rootSpan[type].subPosition;
 
       // errors get converted from their own spans to an event on the root span
       const s = new Set(errSpan.messages);
-      Array.from(s.values()).map((err) => {
+      Array.from(s.values()).forEach((err) => {
         rootSubList[rootSubPos].events.unshift({
           name: rootType.EXCEPTION,
           attributes: [
@@ -179,14 +185,14 @@ class EpsagonExporter extends CollectorTraceExporter {
       /// remove duplicate events and add attrs
       const spanErrs = [];
       const finalSpans = [];
-      spansList[rootSpan.doc.position].spans.map((span) => {
+      spansList[rootSpan.doc.position].spans.forEach((span) => {
         if (span.name === rootType.ERROR && !spanErrs.includes(EpsagonUtils.getFirstAttribute(span).value.stringValue)) {
           const errAttr = span.attributes.filter((attr) => attr.key === spanAttributeNames.MESSAGE);
           const spanStringError = errAttr && errAttr.length ? errAttr[0].value.stringValue : rootType.EXCEPTION;
 
           spanErrs.push(spanStringError);
           /* eslint-disable no-undef */
-          let newSpan = span;
+          const newSpan = span;
           newSpan.name = `${window.location.pathname}${window.location.hash}`;
           newSpan.events.unshift({
             name: rootType.EXCEPTION,
@@ -199,9 +205,13 @@ class EpsagonExporter extends CollectorTraceExporter {
       });
       spansList[rootSpan.doc.position].spans = finalSpans;
     }
+    return spansList;
   }
 
-  addFinalGenericSpanAttrs(spanAttributes, attributesLength, span) {
+  addFinalGenericSpanAttrs(_spanAttributes, _attributesLength, _span) {
+    const spanAttributes = _spanAttributes;
+    const span = _span;
+    let attributesLength = _attributesLength;
     // replace any user agent keys with eps name convention
     const httpUA = spanAttributes.filter((attr) => attr.key === spanAttributeNames.HOST_USER_AGENT);
     if (httpUA.length) { httpUA[0].key = spanAttributeNames.HOST_REQUEST_USER_AGENT; }
@@ -216,7 +226,7 @@ class EpsagonExporter extends CollectorTraceExporter {
       }
       return attr.key !== spanAttributeNames.RESPONSE_CONTENT_LENGTH_EPS;
     });
-    return attributesLength;
+    return { attributesLength, span, spanAttributes };
   }
 }
 

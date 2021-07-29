@@ -6,7 +6,7 @@ class EpsagonFormatter {
     this.config = config;
   }
 
-  formatRouteChangeSpan(userAgent) {
+  static formatRouteChangeSpan(userAgent) {
     /* eslint-disable no-undef */
     return {
       name: `${window.location.pathname}${window.location.hash}`,
@@ -14,7 +14,7 @@ class EpsagonFormatter {
     };
   }
 
-  formatDocumentLoadSpan() {
+  static formatDocumentLoadSpan() {
     return {
       name: `${window.location.pathname}${window.location.hash}`,
       browser: { key: 'type', value: { stringValue: 'browser' } },
@@ -22,7 +22,7 @@ class EpsagonFormatter {
     };
   }
 
-  formatUserInteractionSpan(spanAttributes) {
+  static formatUserInteractionSpan(spanAttributes) {
     const eventType = spanAttributes.filter((attr) => attr.key === ('event_type'));
     return {
       operation: { key: 'operation', value: { stringValue: eventType[0].value.stringValue } },
@@ -30,7 +30,10 @@ class EpsagonFormatter {
     };
   }
 
-  formatHttpRequestSpan(span, httpHost, spanAttributes, attributesLength) {
+  formatHttpRequestSpan(_span, httpHost, _spanAttributes, _attributesLength) {
+    const span = _span;
+    let spanAttributes = _spanAttributes;
+    let attributesLength = _attributesLength;
     span.name = httpHost[0].value.stringValue;
     spanAttributes[attributesLength] = { key: 'type', value: { stringValue: 'http' } };
     attributesLength += 1;
@@ -45,7 +48,13 @@ class EpsagonFormatter {
 
     const httpUrlAttr = spanAttributes.filter((attr) => attr.key === 'http.url');
     const httpUrl = httpUrlAttr[0].value.stringValue;
-    return EpsagonUtils.parseURL(httpUrl, span, spanAttributes, attributesLength, this.config.metadataOnly);
+
+    const afterParse = EpsagonUtils.parseURL(
+      httpUrl, span, spanAttributes, attributesLength, this.config.metadataOnly,
+    );
+    attributesLength = afterParse.attributesLength;
+    spanAttributes = afterParse.spanAttributes;
+    return { span, attributesLength, spanAttributes };
   }
 }
 

@@ -11,9 +11,9 @@ class EpsagonUtils {
       if (companyName) span.setAttribute('company.name', parentSpan.identifyFields.companyName);
     }
     if (parentSpan.tags) {
-      for (const key in parentSpan.tags) {
+      Object.keys(parentSpan.tags).forEach((key) => {
         span.setAttribute(key, parentSpan.tags[key]);
-      }
+      });
     }
   }
 

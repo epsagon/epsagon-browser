@@ -71,23 +71,21 @@ function tag(key, value) {
   }
 }
 
-let _configData;
-
-function init(configData) {
-  _configData = configData;
+function init(_configData) {
+  const configData = _configData;
   if (configData.isEpsagonDisabled) {
     console.log('epsagon disabled, tracing not running');
-    return;
+    return undefined;
   }
 
   if (existingTracer && !configData.isTest) {
     console.log('tracer already initialized, remove duplicate initialization call');
-    return;
+    return undefined;
   }
 
   if (!configData.token) {
     console.log('Epsagon token must be passed into initialization');
-    return;
+    return undefined;
   }
 
   if (!configData.collectorURL) {
@@ -134,15 +132,13 @@ function init(configData) {
 
   let whiteListedURLsRegex;
   if (configData.propagateTraceHeaderUrls) {
-    let regUrlsString = '';
-    configData.propagateTraceHeaderUrls.map((url) => {
-      regUrlsString += `${url}|`;
-    });
-    whiteListedURLsRegex = new RegExp(regUrlsString.slice(0, -1), 'i');
+    const urlsList = configData.propagateTraceHeaderUrls;
+    whiteListedURLsRegex = urlsList.length > 1 ? new RegExp(urlsList.join('|')) : new RegExp(urlsList);
   } else {
     whiteListedURLsRegex = /.+/;
   }
 
+  const resetTimer = 3000;
   registerInstrumentations({
     tracerProvider: provider,
     instrumentations: [
@@ -153,11 +149,9 @@ function init(configData) {
       new EpsagonXMLHttpRequestInstrumentation({
         propagateTraceHeaderCorsUrls: whiteListedURLsRegex,
       }, epsSpan, { metadataOnly: configData.metadataOnly }),
+      new EpsagonRedirectInstrumentation(tracer, epsSpan, resetTimer),
     ],
   });
-
-  const resetTimer = 3000;
-  new EpsagonRedirectInstrumentation(tracer, epsSpan, resetTimer);
 
   return { tracer, epsSpan };
 }

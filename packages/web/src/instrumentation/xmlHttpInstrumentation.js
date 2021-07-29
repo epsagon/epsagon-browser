@@ -17,7 +17,7 @@ class EpsagonXMLHttpRequestInstrumentation extends XMLHttpRequestInstrumentation
   _createSpan(xhr, url, method) {
     if (core1.isUrlIgnored(url, this._getConfig().ignoreUrls)) {
       api.diag.debug('ignoring span as url matches ignored url');
-      return;
+      return undefined;
     }
     const spanName = `HTTP ${method.toUpperCase()}`;
     const currentSpan = this.tracer.startSpan(spanName, {
@@ -47,7 +47,9 @@ class EpsagonXMLHttpRequestInstrumentation extends XMLHttpRequestInstrumentation
       if (resHeadersArr.length > 0) {
         const headersObj = resHeadersArr.reduce((acc, current) => {
           const parts = current.split(': ');
-          acc[parts[0]] = parts[1];
+          const key = parts[0];
+          const value = parts[1];
+          acc[key] = value;
           return acc;
         }, {});
         span.setAttribute('http.response.headers', `${JSON.stringify(headersObj)}`);

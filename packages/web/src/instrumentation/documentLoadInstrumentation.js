@@ -54,8 +54,7 @@ class EpsagonDocumentLoadInstrumentation extends DocumentLoadInstrumentation {
   }
 
   reportError(event) {
-    let error;
-    error = event.error ? event.error : event.reason;
+    const error = event.error ? event.error : event.reason;
     const failedToExportError = (this._includes(error.message, 'Failed to export with XHR (status: 502)')) || this._includes(error, 'Failed to export with XHR (status: 502)');
     if (error && failedToExportError) {
       return;

@@ -1,7 +1,7 @@
 const API_KEY = 'PfW1i6IVetxP8Xu';
 
 class EpsagonIPCalculator {
-  calculate(callback) {
+  static calculate(callback) {
     // start requesting for ip
     /* eslint-disable no-undef */
     fetch('https://api.ipify.org?format=json', {
