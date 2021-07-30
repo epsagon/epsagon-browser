@@ -1,8 +1,10 @@
+/* eslint-disable no-underscore-dangle */
+/* eslint-disable max-len */
 import { XMLHttpRequestInstrumentation } from '@opentelemetry/instrumentation-xml-http-request';
 
 const api = require('@opentelemetry/api');
-const core_1 = require('@opentelemetry/core');
-const semantic_conventions_1 = require('@opentelemetry/semantic-conventions');
+const core1 = require('@opentelemetry/core');
+const semanticConventions1 = require('@opentelemetry/semantic-conventions');
 
 class EpsagonXMLHttpRequestInstrumentation extends XMLHttpRequestInstrumentation {
   constructor(config, parentSpan, options) {
@@ -13,16 +15,16 @@ class EpsagonXMLHttpRequestInstrumentation extends XMLHttpRequestInstrumentation
 
   // create span copied over so parent span can be added at creation
   _createSpan(xhr, url, method) {
-    if (core_1.isUrlIgnored(url, this._getConfig().ignoreUrls)) {
+    if (core1.isUrlIgnored(url, this._getConfig().ignoreUrls)) {
       api.diag.debug('ignoring span as url matches ignored url');
-      return;
+      return undefined;
     }
     const spanName = `HTTP ${method.toUpperCase()}`;
     const currentSpan = this.tracer.startSpan(spanName, {
       kind: api.SpanKind.CLIENT,
       attributes: {
-        [semantic_conventions_1.SemanticAttributes.HTTP_METHOD]: method,
-        [semantic_conventions_1.SemanticAttributes.HTTP_URL]: url,
+        [semanticConventions1.SemanticAttributes.HTTP_METHOD]: method,
+        [semanticConventions1.SemanticAttributes.HTTP_URL]: url,
       },
     }, this.epsParentSpan.currentSpan ? api.trace.setSpan(api.context.active(), this.epsParentSpan.currentSpan) : undefined);
     currentSpan.addEvent('open');
@@ -43,9 +45,11 @@ class EpsagonXMLHttpRequestInstrumentation extends XMLHttpRequestInstrumentation
       span.setAttribute('http.response.body', responseBody.substring(0, 5000));
       const resHeadersArr = xhrMem.xhrInstance.getAllResponseHeaders().split('\r\n');
       if (resHeadersArr.length > 0) {
-        const headersObj = resHeadersArr.reduce((acc, current, i) => {
+        const headersObj = resHeadersArr.reduce((acc, current) => {
           const parts = current.split(': ');
-          acc[parts[0]] = parts[1];
+          const key = parts[0];
+          const value = parts[1];
+          acc[key] = value;
           return acc;
         }, {});
         span.setAttribute('http.response.headers', `${JSON.stringify(headersObj)}`);

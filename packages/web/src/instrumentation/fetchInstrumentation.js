@@ -1,27 +1,31 @@
+/* eslint-disable no-underscore-dangle */
+/* eslint-disable no-console */
+/* eslint-disable max-len */
 import { FetchInstrumentation } from '@opentelemetry/instrumentation-fetch';
 
 const api = require('@opentelemetry/api');
 const core = require('@opentelemetry/core');
-const semantic_conventions_1 = require('@opentelemetry/semantic-conventions');
+const semanticConventions1 = require('@opentelemetry/semantic-conventions');
 
 class EpsagonFetchInstrumentation extends FetchInstrumentation {
-  constructor(config, parentSpan, options){
+  constructor(config, parentSpan, options) {
     super(config);
     this.epsParentSpan = parentSpan;
     this.globalOptions = options;
   }
 
   // has to be overridden in order to grab response obj before the stream is read and no longer useable
+  /* eslint-disable no-undef */
   _patchConstructor() {
     return (original) => {
       const plugin = this;
       return function patchConstructor(input, init) {
-        console.log(`input: ${input}, init: ${init} `)
+        console.log(`input: ${input}, init: ${init} `);
         const url = input instanceof Request ? input.url : input;
         const options = input instanceof Request ? input : init || {};
-        console.log(`url: ${url}, options: ${options} `)
-        if(options.eps){
-          //if epsagon request, ignore and dont send through eps param
+        console.log(`url: ${url}, options: ${options} `);
+        if (options.eps) {
+          // if epsagon request, ignore and dont send through eps param
           return original.apply(this, [url, {}]);
         }
         const createdSpan = plugin._createSpan(url, options);
@@ -59,14 +63,14 @@ class EpsagonFetchInstrumentation extends FetchInstrumentation {
               const read = () => {
                 reader.read().then(async ({ done }) => {
                   if (done) {
-                    if(plugin.globalOptions && !plugin.globalOptions.metadataOnly){
+                    if (plugin.globalOptions && !plugin.globalOptions.metadataOnly) {
                       const resHeaders = [];
-                      for (const entry of resClone2.headers.entries()) {
+                      Object.entries(resClone2.headers).forEach((entry) => {
                         if (entry[0] === 'content-length') {
-                          span.setAttribute('http.response_content_length_eps', parseInt(entry[1]));
+                          span.setAttribute('http.response_content_length_eps', parseInt(entry[1], 10));
                         }
                         resHeaders.push(entry);
-                      }
+                      });
                       span.setAttribute('http.response.body', (await resClone2.text()).substring(0, 5000));
                       if (resHeaders.length > 0) {
                         span.setAttribute('http.response.headers', JSON.stringify(resHeaders));
@@ -97,15 +101,15 @@ class EpsagonFetchInstrumentation extends FetchInstrumentation {
           }
         }
         return new Promise((resolve, reject) => api.context.with(api.trace.setSpan(api.context.active(), createdSpan), () => {
-          console.log(`Before add headers: url: ${url}, options: ${options} `)
+          console.log(`Before add headers: url: ${url}, options: ${options} `);
           plugin._addHeaders(options, url);
-          console.log(`After add headers: url: ${url}, options: ${options} `)
-          plugin._tasksCount++;
+          console.log(`After add headers: url: ${url}, options: ${options} `);
+          plugin._tasksCount += 1;
           return original
             .apply(this, [url, options])
-            .catch(ex => {
-              console.log(ex)
-              console.log(JSON.stringify(ex))
+            .catch((ex) => {
+              console.log(ex);
+              console.log(JSON.stringify(ex));
             })
             .then(onSuccess.bind(this, createdSpan, resolve), onError.bind(this, createdSpan, reject));
         }));
@@ -117,38 +121,36 @@ class EpsagonFetchInstrumentation extends FetchInstrumentation {
   _createSpan(url, options = {}) {
     if (core.isUrlIgnored(url, this._getConfig().ignoreUrls)) {
       api.diag.debug('ignoring span as url matches ignored url');
-      return;
+      return undefined;
     }
     const method = (options.method || 'GET').toUpperCase();
     const spanName = `HTTP ${method}`;
-    console.log(`create span: url: ${url}, options: ${options} `)
+    console.log(`create span: url: ${url}, options: ${options} `);
 
     let span;
-    if(this.globalOptions.metadataOnly) {
+    if (this.globalOptions.metadataOnly) {
       span = {
         kind: api.SpanKind.CLIENT,
         attributes: {
           component: this.moduleName,
-          [semantic_conventions_1.SemanticAttributes.HTTP_METHOD]: method,
-          [semantic_conventions_1.SemanticAttributes.HTTP_URL]: url,
+          [semanticConventions1.SemanticAttributes.HTTP_METHOD]: method,
+          [semanticConventions1.SemanticAttributes.HTTP_URL]: url,
         },
-      }
-    }
-    else {
+      };
+    } else {
       span = {
         kind: api.SpanKind.CLIENT,
         attributes: {
           component: this.moduleName,
-          [semantic_conventions_1.SemanticAttributes.HTTP_METHOD]: method,
-          [semantic_conventions_1.SemanticAttributes.HTTP_URL]: url,
+          [semanticConventions1.SemanticAttributes.HTTP_METHOD]: method,
+          [semanticConventions1.SemanticAttributes.HTTP_URL]: url,
           'http.request.headers': JSON.stringify(options.headers),
           'http.request.body': options.body,
         },
-      }
+      };
     }
     return this.tracer.startSpan(spanName, span, this.epsParentSpan.currentSpan ? api.trace.setSpan(api.context.active(), this.epsParentSpan.currentSpan) : undefined);
   }
 }
-
 
 export default EpsagonFetchInstrumentation;

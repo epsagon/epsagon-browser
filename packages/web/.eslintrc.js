@@ -1,3 +1,4 @@
 module.exports = {
-    "extends": "airbnb-base"
+  extends: 'airbnb-base',
+  ignorePatterns: ['*.test.js', '**/dist/*.js', '**/test/*.js'],
 };
