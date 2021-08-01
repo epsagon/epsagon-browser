@@ -1,5 +1,5 @@
 {
-  "name": "@epsagin/web",
+  "name": "@epsagon/react",
   "version": "0.0.0-development",
   "description": "This package provides tracing to React web applications for the collection of distributed tracing and performance metrics.",
   "author": "Epsagon Team <support@epsagon.com>",
@@ -61,7 +61,7 @@
     "react": "^16.0.0"
   },
   "dependencies": {
-    "@epsagin/nodejs": "^1.1.5",
+    "@epsagon/web": "^1.1.5",
     "@opentelemetry/plugin-react-load": "^0.16.0",
     "ua-parser-js": "^0.7.28"
   },
