@@ -17,20 +17,20 @@ jobs:
         with:
           node-version: 12
       
-      - name: Install dependencies @epsagon/web
+      - name: Install dependencies @epsagin/nodejs
         working-directory: ./packages/web
         run: npm install && npm run test && npm run build
-      - name: Release @epsagon/web
+      - name: Release @epsagin/nodejs
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         working-directory: ./packages/web
         run: npm run semantic-release
           
-      - name: Install dependencies @epsagon/react
+      - name: Install dependencies @epsagin/web
         working-directory: ./packages/react
         run: npm install && npm run test && npm run build
-      - name: Release @epsagon/react
+      - name: Release @epsagin/web
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
