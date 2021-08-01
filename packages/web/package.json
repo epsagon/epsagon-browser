@@ -1,5 +1,5 @@
 {
-  "name": "@epsagon/web",
+  "name": "@epsagin/nodejs",
   "version": "0.0.0-development",
   "description": "This package provides tracing to Node.js web applications for the collection of distributed tracing and performance metrics.",
   "author": "Epsagon Team <support@epsagon.com>",

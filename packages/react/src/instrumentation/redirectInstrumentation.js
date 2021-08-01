@@ -1,7 +1,7 @@
 /* eslint max-len: ["error", { "ignoreComments": true }] */
 
 /* eslint no-param-reassign: ["error", { "props": true, "ignorePropertyModificationsFor": ["parentSpan"] }] */
-const { EpsagonUtils } = require('@epsagon/web');
+const { EpsagonUtils } = require('@epsagin/nodejs');
 
 function ReactRedirectInstrumentation(history, tracer, parentSpan) {
   const startSpan = (originPath, newPath) => tracer.startSpan('route_change', {
