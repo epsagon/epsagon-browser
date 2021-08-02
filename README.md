@@ -25,7 +25,7 @@ This package provides tracing to front end of web applications for the collectio
 
 To install Epsagon, simply run:
 ```sh
-npm install @epsagon/react --save
+npm install @epsagon/web --save
 ```
 
 ## Usage
@@ -33,7 +33,7 @@ npm install @epsagon/react --save
 To initialize the tracer, import the SDK and call the init function before the start of your project.
 
 ```javascript
-import epsagon from '@epsagon/react'
+import epsagon from '@epsagon/web'
 
 epsagon.init({
   token: 'epsagon-token',
