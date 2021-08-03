@@ -64,7 +64,7 @@ class EpsagonDocumentLoadInstrumentation extends DocumentLoadInstrumentation {
         message: error.message || error,
         type: 'browser',
         operation: 'page_load',
-        // "stack": stack
+        stack: error.stack,
       },
     }, this.epsParentSpan.currentSpan ? api.trace.setSpan(api.context.active(), this.epsParentSpan.currentSpan) : undefined);
     EpsagonUtils.addEpsSpanAttrs(span, this.epsParentSpan);
