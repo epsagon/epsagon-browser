@@ -1,11 +1,13 @@
 const { JSDOM } = require('jsdom');
 const fetch = require('node-fetch');
 const sinon = require('sinon');
+import { diag } from "@opentelemetry/api";
 const epsagon = require('../src/web-tracer');
+
 
 class Request {
   constructor() {
-    console.log('doesnt matter');
+    diag.debug('doesnt matter');
   }
 }
 

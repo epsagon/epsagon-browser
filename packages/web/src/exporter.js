@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 /* eslint-disable max-len */
 import { CollectorTraceExporter } from '@opentelemetry/exporter-collector';
+import { diag } from "@opentelemetry/api";
 import EpsagonFormatter from './formatter';
 import EpsagonResourceManager from './resource-manager';
 import EpsagonIPCalculator from './ip-calculator';
@@ -48,7 +49,6 @@ class EpsagonExporter extends CollectorTraceExporter {
   }
 
   convert(spans) {
-    console.log(spans);
     try {
       const convertedSpans = super.convert(spans);
       let spansList = EpsagonUtils.getFirstResourceSpan(convertedSpans).instrumentationLibrarySpans;
@@ -157,7 +157,7 @@ class EpsagonExporter extends CollectorTraceExporter {
 
       return this.resourceManager.addResourceAttrs(convertedSpans, this.userAgent);
     } catch (err) {
-      console.log('error converting and exporting', err);
+      diag.warn('error converting and exporting', err);
       return null;
     }
   }

@@ -1,5 +1,7 @@
 const chai = require('chai');
 const epsagon = require('../src/web-tracer');
+import {diag, DiagLogLevel} from '@opentelemetry/api';
+import * as sinon from 'sinon';
 const helper = require('./helper');
 
 before(helper.browserenv);
@@ -31,6 +33,72 @@ describe('init tests', () => {
       token: 'fasdfsafa', appName, isEpsagonDisabled: true, isTest: true,
     });
     chai.assert.notExists(res, 'res should be false');
+    done();
+  });
+});
+
+describe('logging tests', ()  => {
+  const createLoggerStub = sinon.fake();
+  beforeEach(() => {
+    diag.setLogger = createLoggerStub
+  });
+
+  afterEach(() => {
+    createLoggerStub.resetHistory()
+  });
+
+
+  it('default debug false test', (done) => {
+    const res = epsagon.init({ token: 'fasdfsafa', appName, isTest: true, epsagonDebug: false });
+    chai.assert.isFalse(createLoggerStub.calledOnce)
+    done();
+  });
+
+  it('default debug true test', (done) => {
+    const res = epsagon.init({ token: 'fasdfsafa', appName, isTest: true, epsagonDebug: true });
+    chai.assert.isTrue(createLoggerStub.calledOnce)
+    chai.assert.equal(createLoggerStub.lastArg, DiagLogLevel.DEBUG)
+    done();
+  });
+
+  it('no log level', (done) => {
+    const res = epsagon.init({ token: 'fasdfsafa', appName, isTest: true });
+    chai.assert.isFalse(createLoggerStub.calledOnce)
+    done();
+  });
+
+  it('log level debug', (done) => {
+    const res = epsagon.init({ token: 'fasdfsafa', appName: appName, isTest: true, logLevel: 'DEBUG'});
+    chai.assert.isTrue(createLoggerStub.calledOnce)
+    chai.assert.equal(createLoggerStub.lastArg, DiagLogLevel.DEBUG)
+    done();
+  });
+
+  it('log level info', (done) => {
+    const res = epsagon.init({ token: 'fasdfsafa', appName: appName, isTest: true, logLevel: 'INFO'});
+    chai.assert.isTrue(createLoggerStub.calledOnce)
+    chai.assert.equal(createLoggerStub.lastArg, DiagLogLevel.INFO)
+    done();
+  });
+
+  it('log level warn', (done) => {
+    const res = epsagon.init({ token: 'fasdfsafa', appName: appName, isTest: true, logLevel: 'WARN'});
+    chai.assert.isTrue(createLoggerStub.calledOnce)
+    chai.assert.equal(createLoggerStub.lastArg, DiagLogLevel.WARN)
+    done();
+  });
+
+  it('log level error', (done) => {
+    const res = epsagon.init({ token: 'fasdfsafa', appName: appName, isTest: true, logLevel: 'ERROR'});
+    chai.assert.isTrue(createLoggerStub.calledOnce)
+    chai.assert.equal(createLoggerStub.lastArg, DiagLogLevel.ERROR)
+    done();
+  });
+
+  it('log level all', (done) => {
+    const res = epsagon.init({ token: 'fasdfsafa', appName: appName, isTest: true, logLevel: 'ALL'});
+    chai.assert.isTrue(createLoggerStub.calledOnce)
+    chai.assert.equal(createLoggerStub.lastArg, DiagLogLevel.ALL)
     done();
   });
 });
