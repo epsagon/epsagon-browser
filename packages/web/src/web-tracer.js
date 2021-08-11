@@ -111,7 +111,7 @@ function init(_configData) {
   }
 
   if (configData.isEpsagonDisabled) {
-    diag.info('epsagon disabled, tracing not running');
+    console.log('epsagon disabled, tracing not running');
     return undefined;
   }
 
@@ -121,7 +121,7 @@ function init(_configData) {
   }
 
   if (!configData.token) {
-    diag.error('Epsagon token must be passed into initialization');
+    console.log('Epsagon token must be passed into initialization');
     return undefined;
   }
 
