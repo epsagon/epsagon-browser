@@ -54,6 +54,9 @@ class EpsagonFetchInstrumentation extends FetchInstrumentation {
           }
         }
         function onSuccess(span, resolve, response) {
+          if (!response) {
+            return;
+          }
           try {
             const resClone = response.clone();
             const resClone2 = response.clone();
