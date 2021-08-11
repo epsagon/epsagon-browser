@@ -83,7 +83,7 @@ Advanced options can be configured as a parameter to the init() method.
 By default all outgoing requests will be added with a `traceparent` header which allows Epsagon to connect the front end trace to the backend traces. Some external services will not accept a traceparent header on request. If you need to limit the traceparent headers to requests to internal services, pass in an array of the hosts you do want to connect to in the propagateTraceHeaderUrls param in the config.
 
 ```javascript
-import epsagon from '@epsagon/react'
+import epsagon from '@epsagon/web'
 
 epsagon.init({
   token: 'epsagon-token',
