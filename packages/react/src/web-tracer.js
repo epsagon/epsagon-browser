@@ -3,7 +3,7 @@ import ReactRedirectInstrumentation from './instrumentation/redirectInstrumentat
 const epsagon = require('@epsagon/web');
 
 const webInit = epsagon.init;
-const { identifY, tag } = epsagon;
+const { identify, tag } = epsagon;
 
 function init(configData) {
   const { tracer, epsSpan } = webInit(configData);
@@ -15,4 +15,4 @@ function init(configData) {
   return tracer;
 }
 
-export { init, identifY, tag };
+export { init, identify, tag };
