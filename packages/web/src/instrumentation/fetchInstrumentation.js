@@ -2,6 +2,7 @@
 /* eslint-disable no-console */
 /* eslint-disable max-len */
 import { FetchInstrumentation } from '@opentelemetry/instrumentation-fetch';
+import { diag } from "@opentelemetry/api";
 
 const api = require('@opentelemetry/api');
 const core = require('@opentelemetry/core');
@@ -20,10 +21,10 @@ class EpsagonFetchInstrumentation extends FetchInstrumentation {
     return (original) => {
       const plugin = this;
       return function patchConstructor(input, init) {
-        console.log(`input: ${input}, init: ${init} `);
+        diag.debug(`input: ${input}, init: ${init} `);
         const url = input instanceof Request ? input.url : input;
         const options = input instanceof Request ? input : init || {};
-        console.log(`url: ${url}, options: ${options} `);
+        diag.debug(`url: ${url}, options: ${options} `);
         if (options.eps) {
           // if epsagon request, ignore and dont send through eps param
           return original.apply(this, [url, {}]);
@@ -101,15 +102,15 @@ class EpsagonFetchInstrumentation extends FetchInstrumentation {
           }
         }
         return new Promise((resolve, reject) => api.context.with(api.trace.setSpan(api.context.active(), createdSpan), () => {
-          console.log(`Before add headers: url: ${url}, options: ${options} `);
+          diag.debug(`Before add headers: url: ${url}, options: ${options} `);
           plugin._addHeaders(options, url);
-          console.log(`After add headers: url: ${url}, options: ${options} `);
+          diag.debug(`After add headers: url: ${url}, options: ${options} `);
           plugin._tasksCount += 1;
           return original
             .apply(this, [url, options])
             .catch((ex) => {
-              console.log(ex);
-              console.log(JSON.stringify(ex));
+              diag.debug(ex);
+              diag.debug(JSON.stringify(ex));
             })
             .then(onSuccess.bind(this, createdSpan, resolve), onError.bind(this, createdSpan, reject));
         }));
@@ -120,12 +121,12 @@ class EpsagonFetchInstrumentation extends FetchInstrumentation {
   // create span copied over so parent span can be added at creation, additional attributes also added here
   _createSpan(url, options = {}) {
     if (core.isUrlIgnored(url, this._getConfig().ignoreUrls)) {
-      api.diag.debug('ignoring span as url matches ignored url');
+      diag.debug('ignoring span as url matches ignored url');
       return undefined;
     }
     const method = (options.method || 'GET').toUpperCase();
     const spanName = `HTTP ${method}`;
-    console.log(`create span: url: ${url}, options: ${options} `);
+    diag.debug(`create span: url: ${url}, options: ${options} `);
 
     let span;
     if (this.globalOptions.metadataOnly) {

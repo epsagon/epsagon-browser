@@ -4,12 +4,14 @@
 import { BatchSpanProcessor } from '@opentelemetry/tracing';
 import { WebTracerProvider } from '@opentelemetry/web';
 import { ZoneContextManager } from '@opentelemetry/context-zone';
+import { diag, DiagConsoleLogger, DiagLogLevel } from "@opentelemetry/api";
 import EpsagonFetchInstrumentation from './instrumentation/fetchInstrumentation';
 import EpsagonXMLHttpRequestInstrumentation from './instrumentation/xmlHttpInstrumentation';
 import EpsagonDocumentLoadInstrumentation from './instrumentation/documentLoadInstrumentation';
 import EpsagonExporter from './exporter';
 import EpsagonUtils from './utils';
 import EpsagonRedirectInstrumentation from './instrumentation/redirectInstrumentation';
+
 
 const { CompositePropagator, HttpTraceContextPropagator } = require('@opentelemetry/core');
 const parser = require('ua-parser-js');
@@ -71,20 +73,55 @@ function tag(key, value) {
   }
 }
 
+function handleLogLevel(_logLevel) {
+  let logLevel;
+  switch (_logLevel) {
+    case 'ALL':
+      logLevel = DiagLogLevel.ALL;
+      break
+    case 'DEBUG':
+      logLevel = DiagLogLevel.DEBUG;
+      break
+    case 'INFO':
+      logLevel = DiagLogLevel.INFO;
+      break
+    case 'WARN':
+      logLevel = DiagLogLevel.WARN
+      break
+    case 'ERROR':
+      logLevel = DiagLogLevel.ERROR
+      break
+      // Default is Open Telemetry default which is DiagLogLevel.INFO
+    default:
+      return
+  }
+  diag.setLogger(new DiagConsoleLogger(), logLevel)
+}
+
 function init(_configData) {
   const configData = _configData;
+
+  if (configData.logLevel) {
+    handleLogLevel(configData.logLevel)
+  }
+
+  // Epsagon debug overrides configData.logLevel
+  if (configData.epsagonDebug) {
+    diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.DEBUG)
+  }
+
   if (configData.isEpsagonDisabled) {
-    console.log('epsagon disabled, tracing not running');
+    diag.info('epsagon disabled, tracing not running');
     return undefined;
   }
 
   if (existingTracer && !configData.isTest) {
-    console.log('tracer already initialized, remove duplicate initialization call');
+    diag.info('tracer already initialized, remove duplicate initialization call');
     return undefined;
   }
 
   if (!configData.token) {
-    console.log('Epsagon token must be passed into initialization');
+    diag.error('Epsagon token must be passed into initialization');
     return undefined;
   }
 
