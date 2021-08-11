@@ -2,11 +2,11 @@ import ReactRedirectInstrumentation from './instrumentation/redirectInstrumentat
 
 const epsagon = require('@epsagon/web');
 
-const webInit = epsagon.init;
+const epsagonInit = epsagon.init;
 const { identify, tag } = epsagon;
 
 function init(configData) {
-  const { tracer, epsSpan } = webInit(configData);
+  const { tracer, epsSpan } = epsagonInit(configData);
 
   if (configData.history) {
     ReactRedirectInstrumentation(configData.history, tracer, epsSpan);
