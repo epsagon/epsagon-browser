@@ -12,7 +12,6 @@ import EpsagonExporter from './exporter';
 import EpsagonUtils from './utils';
 import EpsagonRedirectInstrumentation from './instrumentation/redirectInstrumentation';
 
-
 const { CompositePropagator, HttpTraceContextPropagator } = require('@opentelemetry/core');
 const parser = require('ua-parser-js');
 const { registerInstrumentations } = require('@opentelemetry/instrumentation');
