@@ -18,6 +18,7 @@ This package provides tracing to front end of web applications for the collectio
   - [Custom Tags](#custom-tags)
 - [Configuration](#configuration)
   - [Trace Header Propagation](#trace-header-propagation)
+- [FAQ] (#faq)
 - [Getting Help](#getting-help)
 - [Opening Issues](#opening-issues)
 - [License](#license)
@@ -91,6 +92,11 @@ epsagon.init({
   propagateTraceHeaderUrls: ['localhost', 'sub.example.com']
 })
 ```
+
+## FAQ
+**Question:** I'm getting CORS errors in my application.
+
+**Answer:** epsagon-browser adds `traceparent` HTTP header to all outgoing HTTP calls. You should make sure your backend accepts this header. If you are using 3rd party services, you can use `propagateTraceHeaderUrls` parameter to only add the header to your urls.
 
 ## Getting Help
 
