@@ -178,8 +178,8 @@ class EpsagonExporter extends CollectorTraceExporter {
         rootSubList[rootSubPos].events.unshift({
           name: rootType.EXCEPTION,
           attributes: [
-            { key: spanAttributeNames.EXCEPTION_MESSAGE, value: { stringValue: err.message } },
-            { key: spanAttributeNames.EXCEPTION_TYPE, value: { stringValue: err.type || err.message } },
+            { key: spanAttributeNames.EXCEPTION_MESSAGE, value: { stringValue: err.message || rootType.EXCEPTION } },
+            { key: spanAttributeNames.EXCEPTION_TYPE, value: { stringValue: err.type || rootType.EXCEPTION } },
             { key: spanAttributeNames.EXCEPTION_STACK, value: { stringValue: err.stack || err } },
           ],
         });
@@ -191,14 +191,14 @@ class EpsagonExporter extends CollectorTraceExporter {
       const finalSpans = [];
       spansList[rootSpan.doc.position].spans.forEach((span) => {
         if (span.name === rootType.ERROR) {
-          const errData = errSpan.filter((s) => s.traceID === span.traceID);
-          const errDataSpan = errData && errData.length ? errData[0] : errData;
+          const errorData = errSpan.filter((s) => s.traceID === span.traceID);
+          const errorDataSpan = errorData && errorData.length ? errorData[0] : errorData;
           /* eslint-disable no-undef */
           // eslint-disable-next-line no-param-reassign
           span.name = `${window.location.pathname}${window.location.hash}`;
           span.events.unshift({
             name: rootType.EXCEPTION,
-            attributes: errDataSpan.exceptionData.attributes,
+            attributes: errorDataSpan.exceptionData.attributes,
           });
           finalSpans.push(span);
         }

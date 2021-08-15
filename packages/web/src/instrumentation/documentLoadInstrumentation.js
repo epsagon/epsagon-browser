@@ -1,5 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable max-len */
+import { ROOT_CONTEXT } from '@opentelemetry/api';
 import { DocumentLoadInstrumentation } from '@opentelemetry/instrumentation-document-load';
 import EpsagonUtils from '../utils';
 
@@ -69,8 +70,8 @@ class EpsagonDocumentLoadInstrumentation extends DocumentLoadInstrumentation {
     span.exceptionData = {
       name: 'exception',
       attributes: [
-        { key: 'exception.message', value: { stringValue: error.message } },
-        { key: 'exception.type', value: { stringValue: error.type || error.message } },
+        { key: 'exception.message', value: { stringValue: error.message || 'exception' } },
+        { key: 'exception.type', value: { stringValue: error.type || 'exception' } },
         { key: 'exception.stacktrace', value: { stringValue: error.stack || error } },
       ],
     };
