@@ -29,6 +29,8 @@ const spanAttributeNames = {
   RESPONSE_CONTENT_LENGTH: 'http.response_content_length',
   RESPONSE_CONTENT_LENGTH_EPS: 'http.response_content_length_eps',
   EXCEPTION_MESSAGE: 'exception.message',
+  EXCEPTION_TYPE: 'exception.type',
+  EXCEPTION_STACK: 'exception.stacktrace',
   MESSAGE: 'message',
 };
 
@@ -49,6 +51,7 @@ class EpsagonExporter extends CollectorTraceExporter {
 
   convert(spans) {
     console.log(spans);
+    const errorSpans = spans.filter((s) => s.exceptionData);
     try {
       const convertedSpans = super.convert(spans);
       let spansList = EpsagonUtils.getFirstResourceSpan(convertedSpans).instrumentationLibrarySpans;
@@ -144,8 +147,8 @@ class EpsagonExporter extends CollectorTraceExporter {
         }
       });
 
-      if (errSpan.messages.length > 0) {
-        spansList = EpsagonExporter.handleErrors(errSpan, spansList, rootSpan);
+      if (errorSpans && errorSpans.length > 0) {
+        spansList = EpsagonExporter.handleErrors(errorSpans, spansList, rootSpan);
       }
 
       if (rootSpan.eps.remove && rootSpan.doc.parent === rootSpan.eps.spanId) {
@@ -175,7 +178,9 @@ class EpsagonExporter extends CollectorTraceExporter {
         rootSubList[rootSubPos].events.unshift({
           name: rootType.EXCEPTION,
           attributes: [
-            { key: spanAttributeNames.EXCEPTION_MESSAGE, value: { stringValue: err } },
+            { key: spanAttributeNames.EXCEPTION_MESSAGE, value: { stringValue: err.message } },
+            { key: spanAttributeNames.EXCEPTION_TYPE, value: { stringValue: err.type || err.message } },
+            { key: spanAttributeNames.EXCEPTION_STACK, value: { stringValue: err.stack || err } },
           ],
         });
       });
@@ -183,24 +188,19 @@ class EpsagonExporter extends CollectorTraceExporter {
       spansList[rootSpan.doc.position].spans = spansList[rootSpan.doc.position].spans.filter((span) => span.name !== rootType.ERROR);
     } else {
       /// remove duplicate events and add attrs
-      const spanErrs = [];
       const finalSpans = [];
       spansList[rootSpan.doc.position].spans.forEach((span) => {
-        if (span.name === rootType.ERROR && !spanErrs.includes(EpsagonUtils.getFirstAttribute(span).value.stringValue)) {
-          const errAttr = span.attributes.filter((attr) => attr.key === spanAttributeNames.MESSAGE);
-          const spanStringError = errAttr && errAttr.length ? errAttr[0].value.stringValue : rootType.EXCEPTION;
-
-          spanErrs.push(spanStringError);
+        if (span.name === rootType.ERROR) {
+          const errData = errSpan.filter((s) => s.traceID === span.traceID);
+          const errDataSpan = errData && errData.length ? errData[0] : errData;
           /* eslint-disable no-undef */
           const newSpan = span;
           newSpan.name = `${window.location.pathname}${window.location.hash}`;
-          newSpan.events.unshift({
+          newSpan.events.push({
             name: rootType.EXCEPTION,
-            attributes: [
-              { key: spanAttributeNames.EXCEPTION_MESSAGE, value: { stringValue: spanStringError } },
-            ],
+            attributes: errDataSpan.exceptionData.attributes,
           });
-          finalSpans.push(newSpan);
+          finalSpans.push(span);
         }
       });
       spansList[rootSpan.doc.position].spans = finalSpans;
