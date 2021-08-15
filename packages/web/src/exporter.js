@@ -194,9 +194,9 @@ class EpsagonExporter extends CollectorTraceExporter {
           const errData = errSpan.filter((s) => s.traceID === span.traceID);
           const errDataSpan = errData && errData.length ? errData[0] : errData;
           /* eslint-disable no-undef */
-          const newSpan = span;
-          newSpan.name = `${window.location.pathname}${window.location.hash}`;
-          newSpan.events.push({
+          // eslint-disable-next-line no-param-reassign
+          span.name = `${window.location.pathname}${window.location.hash}`;
+          span.events.unshift({
             name: rootType.EXCEPTION,
             attributes: errDataSpan.exceptionData.attributes,
           });
