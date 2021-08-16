@@ -165,7 +165,7 @@ class EpsagonExporter extends CollectorTraceExporter {
     }
   }
 
-  static handleErrors(errSpan, _spansList, rootSpan) {
+  static handleErrors(errorSpans, _spansList, rootSpan) {
     const spansList = _spansList;
     if (rootSpan.rootType === rootType.REDIR || rootSpan.rootType === rootType.DOC) {
       const type = rootSpan.rootType === rootType.REDIR ? rootType.REDIR : rootType.ROOT_TYPE_DOC;
@@ -173,10 +173,10 @@ class EpsagonExporter extends CollectorTraceExporter {
       const rootSubPos = rootSpan[type].subPosition;
 
       // errors get converted from their own spans to an event on the root span
-      Array.from(errSpan.values()).forEach((err) => {
+      Array.from(errorSpans.values()).forEach((error) => {
         rootSubList[rootSubPos].events.unshift({
           name: rootType.EXCEPTION,
-          attributes: err.exceptionData.attributes,
+          attributes: error.exceptionData.attributes,
         });
       });
       rootSubList[rootSpan[type].subPosition].status.code = 2;
@@ -186,7 +186,7 @@ class EpsagonExporter extends CollectorTraceExporter {
       const finalSpans = [];
       spansList[rootSpan.doc.position].spans.forEach((span) => {
         if (span.name === rootType.ERROR) {
-          const errorData = errSpan.filter((s) => s.traceID === span.traceID);
+          const errorData = errorSpans.filter((s) => s.traceID === span.traceID);
           const errorDataSpan = errorData && errorData.length ? errorData[0] : errorData;
           /* eslint-disable no-undef */
           // eslint-disable-next-line no-param-reassign
