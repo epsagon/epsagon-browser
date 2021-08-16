@@ -173,15 +173,10 @@ class EpsagonExporter extends CollectorTraceExporter {
       const rootSubPos = rootSpan[type].subPosition;
 
       // errors get converted from their own spans to an event on the root span
-      const s = new Set(errSpan.messages);
-      Array.from(s.values()).forEach((err) => {
+      Array.from(errSpan.values()).forEach((err) => {
         rootSubList[rootSubPos].events.unshift({
           name: rootType.EXCEPTION,
-          attributes: [
-            { key: spanAttributeNames.EXCEPTION_MESSAGE, value: { stringValue: err.message || rootType.EXCEPTION } },
-            { key: spanAttributeNames.EXCEPTION_TYPE, value: { stringValue: err.type || rootType.EXCEPTION } },
-            { key: spanAttributeNames.EXCEPTION_STACK, value: { stringValue: err.stack || err } },
-          ],
+          attributes: err.exceptionData.attributes,
         });
       });
       rootSubList[rootSpan[type].subPosition].status.code = 2;
