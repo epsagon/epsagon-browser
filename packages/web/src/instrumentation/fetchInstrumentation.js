@@ -39,6 +39,7 @@ class EpsagonFetchInstrumentation extends FetchInstrumentation {
           plugin._endSpan(span, spanData, {
             status: error.status || 0,
             statusText: error.message,
+            trace: error.trace,
             url,
           });
         }
