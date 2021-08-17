@@ -138,15 +138,25 @@ function init(_configData) {
     whiteListedURLsRegex = /.+/;
   }
 
+  let blackListedURLs = [];
+  if(configData.urlPatternsToIgnore) {
+    blackListedURLs = configData.urlPatternsToIgnore;
+    blackListedURLs.forEach(function (item, index, arr){
+      arr[index] = RegExp(item);
+    });
+  }
+
   const resetTimer = 3000;
   registerInstrumentations({
     tracerProvider: provider,
     instrumentations: [
       new EpsagonDocumentLoadInstrumentation(epsSpan),
       new EpsagonFetchInstrumentation({
+        ignoreUrls: blackListedURLs,
         propagateTraceHeaderCorsUrls: whiteListedURLsRegex,
       }, epsSpan, { metadataOnly: configData.metadataOnly }),
       new EpsagonXMLHttpRequestInstrumentation({
+        ignoreUrls: blackListedURLs,
         propagateTraceHeaderCorsUrls: whiteListedURLsRegex,
       }, epsSpan, { metadataOnly: configData.metadataOnly }),
       new EpsagonRedirectInstrumentation(tracer, epsSpan, resetTimer),
