@@ -78,7 +78,8 @@ Advanced options can be configured as a parameter to the init() method.
 |metadataOnly       |Boolean|`false`       |Whether to send only the metadata (`true`) or also the payloads (`false`)          |
 |propagateTraceHeaderUrls       |Array|`*`       |Which outgoing requests to add traceparent headers to. Defaults to all.          |
 |isEpsagonDisabled       |Boolean|`false`       |A flag to completely disable Epsagon (can be used for tests or locally)         |
-
+|epsagonDebug       |Boolean|`false`       |Enable debug prints for troubleshooting. Note: if this flag is true, this will override the logLevel|
+|logLevel       |String|`INFO`       |The default Log level. Could be one of: ```DEBUG```, ```INFO```, ```WARN```, ```ERROR```, ```ALL```.|
 
 ### Trace Header Propagation
 By default all outgoing requests will be added with a `traceparent` header which allows Epsagon to connect the front end trace to the backend traces. Some external services will not accept a traceparent header on request. If you need to limit the traceparent headers to requests to internal services, pass in an array of the hosts you do want to connect to in the propagateTraceHeaderUrls param in the config.
