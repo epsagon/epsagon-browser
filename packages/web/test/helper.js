@@ -60,7 +60,14 @@ module.exports.browserenv = function () {
 };
 
 module.exports.createError = () => {
-  const e = new window.ErrorEvent('error', { error: { message: 'my error' }, message: 'myerror' });
+  const e = new window.ErrorEvent('error', { error: { message: 'my error', type: 'my error type' }, message: 'myerror' });
+  window.dispatchEvent(e);
+};
+
+module.exports.createEmptyStackError = () => {
+  const err = new Error('my error', 'me error type');
+  err.stack = {};
+  const e = new window.ErrorEvent('error', {error :err});
   window.dispatchEvent(e);
 };
 

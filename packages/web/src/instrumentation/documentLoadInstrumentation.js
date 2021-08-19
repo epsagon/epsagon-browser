@@ -69,11 +69,7 @@ class EpsagonDocumentLoadInstrumentation extends DocumentLoadInstrumentation {
     }, this.epsParentSpan.currentSpan ? api.trace.setSpan(api.context.active(), this.epsParentSpan.currentSpan) : undefined);
     span.exceptionData = {
       name: 'exception',
-      attributes: [
-        { key: 'exception.message', value: { stringValue: error.message || 'exception' } },
-        { key: 'exception.type', value: { stringValue: error.type || 'exception' } },
-        { key: 'exception.stacktrace', value: { stringValue: error.stack || error } },
-      ],
+      attributes: EpsagonUtils.genErrorAttribution(error),
     };
     EpsagonUtils.addEpsSpanAttrs(span, this.epsParentSpan);
     span.setStatus({ code: 2 });
