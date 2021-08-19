@@ -75,6 +75,7 @@ Advanced options can be configured as a parameter to the init() method.
 |collectorURL       |String |-|The address of the trace collector to send trace to                                       |
 |metadataOnly       |Boolean|`false`       |Whether to send only the metadata (`true`) or also the payloads (`false`)          |
 |propagateTraceHeaderUrls       |Array|`*`       |Which outgoing requests to add traceparent headers to. Defaults to all.          |
+|urlPatternsToIgnore            |Array|[]        |Which outgoing requests to ignore (and not add traceparent to. Default to []   |
 |isEpsagonDisabled       |Boolean|`false`       |A flag to completely disable Epsagon (can be used for tests or locally)         |
 |epsagonDebug       |Boolean|`false`       |Enable debug prints for troubleshooting. Note: if this flag is true, this will override the logLevel|
 |logLevel       |String|`INFO`       |The default Log level. Could be one of: ```DEBUG```, ```INFO```, ```WARN```, ```ERROR```, ```ALL```.|
@@ -90,6 +91,7 @@ epsagon.init({
   token: 'epsagon-token',
   appName: 'app-name-stage',
   propagateTraceHeaderUrls: ['localhost', 'sub.example.com']
+  urlPatternsToIgnore: [".*example.*", ".*abc.*"]  
 })
 ```
 
