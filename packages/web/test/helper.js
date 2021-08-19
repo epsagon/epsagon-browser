@@ -65,7 +65,9 @@ module.exports.createError = () => {
 };
 
 module.exports.createEmptyStackError = () => {
-  const err = new Error('my error', 'me error type');
+  const err = new Error();
+  err.message = 'my error';
+  err.type = 'my error type';
   err.stack = {};
   const e = new window.ErrorEvent('error', {error :err});
   window.dispatchEvent(e);
