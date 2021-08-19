@@ -7,13 +7,16 @@ import EpsagonFetchInstrumentation from '../src/instrumentation/fetchInstrumenta
 const chai = require('chai');
 const sinon = require('sinon');
 const helper = require('./helper');
+const epsagon = require('../src/web-tracer');
 
 helper.browserenv();
 const sandbox = sinon.createSandbox();
 
+let spyCreateSpan;
 let spyExporter;
 let spyHeaders;
 let spyAttrs;
+
 describe('xhr instrumentation', () => {
   beforeEach(() => {
     Object.defineProperty(global.window.document, 'readyState', {
@@ -85,6 +88,42 @@ describe('fetch instrumentation', () => {
       }, 6000);
     });
   }).timeout(7000);
+});
+
+describe('fetch instrumentation - ignore url', () => {
+  beforeEach(() => {
+    Object.defineProperty(global.window.document, 'readyState', {
+      writable: true,
+      value: 'complete',
+    });
+    spyHeaders = sandbox.stub(FetchInstrumentation.prototype, '_addHeaders');    
+    spyCreateSpan = sandbox.spy(EpsagonFetchInstrumentation.prototype, '_createSpan');
+  });
+
+  afterEach(() => {
+    spyHeaders.restore();
+    spyCreateSpan.restore();
+  });
+
+  it('should ignore creating span according to the given urlPatternsToIgnore', (done) => {
+    epsagon.init({ token: 'sdfsdfas', appName: 'test app', isTest: true, urlPatternsToIgnore: [".*place.*"] });
+    window.fetch('https://jsonplaceholder.typicode.com/photos/').then(() => {
+      setTimeout(() => {
+        chai.assert.notExists(spyCreateSpan.returnValues[0]);
+        done();
+      }, 6000);
+    });
+  }).timeout(7000);
+
+  it('should create a span according to the given urlPatternsToIgnore', (done) => {    
+    epsagon.init({ token: 'sdasdf', appName: 'test app', isTest: true, urlPatternsToIgnore: [".*abc.*"] });
+    window.fetch('https://jsonplaceholder.typicode.com/photos/').then(() => {
+      setTimeout(() => {
+        chai.assert.ok(spyCreateSpan.returnValues[0], "span wasn't created");
+        done();
+      }, 6000);
+    });
+  }).timeout(7000);  
 });
 
 after(() => sandbox.restore());
