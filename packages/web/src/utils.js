@@ -66,6 +66,21 @@ class EpsagonUtils {
     }
     return null;
   }
+
+  static genErrorAttribution(error) {
+    return [
+      this.verifyAttributionStringValue('exception.message', error.message, 'exception'),
+      this.verifyAttributionStringValue('exception.type', error.type, 'exception'),
+      this.verifyAttributionStringValue('exception.stacktrace', error.stack, 'exception'),
+    ];
+  }
+
+  static verifyAttributionStringValue(keyValue, value, defaultValue) {
+    if (value && value.length > 0) {
+      return { key: keyValue, value: { stringValue: value } };
+    }
+    return { key: keyValue, value: { stringValue: defaultValue } };
+  }
 }
 
 export default EpsagonUtils;

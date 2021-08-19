@@ -82,17 +82,19 @@ describe('docload instrumentation', () => {
         detail: {},
       }),
     );
-    helper.createError();
+    helper.createEmptyStackError();
     setTimeout(() => {
       const spans = spyExporter.returnValues[0];
       chai.assert.ok(spans.resourceSpans[0].instrumentationLibrarySpans[0], 'spans not created');
-      const span = spans.resourceSpans[0].instrumentationLibrarySpans[0];
-      chai.assert.equal(span.spans.length, 1, 'more then one doc load span being created');
-      chai.assert.equal(span.spans[0].name, '/', 'Span name was not converted to path name');
-      chai.assert.equal(span.spans[0].events[0].name, 'exception', 'Error not added as event on doc load span');
-      chai.assert.deepEqual(span.spans[0].events[0].attributes[0], { key: 'exception.message', value: { stringValue: 'my error' } }, 'exception didnt capture error message');
-      const typeObj = span.spans[0].attributes.filter((obj) => obj.key === 'type');
-      const operationObj = span.spans[0].attributes.filter((obj) => obj.key === 'operation');
+      const errorSpan = spans.resourceSpans[0].instrumentationLibrarySpans[0].spans[0];
+      chai.assert.equal(errorSpan.name, '/', 'Span name was not converted to path name');
+      chai.assert.equal(errorSpan.events[0].name, 'exception', 'Error not added as event on doc load span');
+      const errorEvent = errorSpan.events[0];
+      chai.assert.equal(errorEvent.attributes.length, 3, 'error event should have 3 attributes: error message, type and stacktrace')
+      chai.assert.deepEqual(errorEvent.attributes[0], { key: 'exception.message', value: { stringValue: 'my error' } }, 'exception didnt capture error message');
+      chai.assert.deepEqual(errorEvent.attributes[1], { key: 'exception.type', value: { stringValue: 'my error type' } }, 'exception didnt capture error type');
+      const typeObj = errorSpan.attributes.filter((obj) => obj.key === 'type');
+      const operationObj = errorSpan.attributes.filter((obj) => obj.key === 'operation');
       chai.assert.equal(typeObj[0].value.stringValue, helper.type.DOC, 'incorrect doc load type');
       chai.assert.equal(operationObj[0].value.stringValue, helper.operations.LOAD, 'incorrect doc load operation');
       done();
@@ -105,12 +107,15 @@ describe('docload instrumentation', () => {
       const spans = spyExporter.returnValues[0];
       chai.assert.ok(spans.resourceSpans[0].instrumentationLibrarySpans[0], 'spans not created');
       const span = spans.resourceSpans[0].instrumentationLibrarySpans[0];
+      const errorSpan = span.spans[0];
+      const errorEvent = errorSpan.events[0];
       chai.assert.equal(span.spans.length, 1, 'more then one doc load span being created');
-      chai.assert.equal(span.spans[0].name, '/', 'Span name was not converted to path name');
-      chai.assert.equal(span.spans[0].events[0].name, 'exception', 'Error not added as event on doc load span');
-      chai.assert.deepEqual(span.spans[0].events[0].attributes[0], { key: 'exception.message', value: { stringValue: 'my error' } }, 'exception didnt capture error message');
-      const typeObj = span.spans[0].attributes.filter((obj) => obj.key === 'type');
-      const operationObj = span.spans[0].attributes.filter((obj) => obj.key === 'operation');
+      chai.assert.equal(errorEvent.attributes.length, 3, 'error event should have 3 attributes: error message, type and stacktrace')
+      chai.assert.equal(errorSpan.name, '/', 'Span name was not converted to path name');
+      chai.assert.equal(errorSpan.events[0].name, 'exception', 'Error not added as event on doc load span');
+      chai.assert.deepEqual(errorSpan.events[0].attributes[0], { key: 'exception.message', value: { stringValue: 'my error' } }, 'exception didnt capture error message');
+      const typeObj = errorSpan.attributes.filter((obj) => obj.key === 'type');
+      const operationObj = errorSpan.attributes.filter((obj) => obj.key === 'operation');
       chai.assert.equal(typeObj[0].value.stringValue, helper.type.DOC, 'incorrect doc load type');
       chai.assert.equal(operationObj[0].value.stringValue, helper.operations.LOAD, 'incorrect doc load operation');
       done();
