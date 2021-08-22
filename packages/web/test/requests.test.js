@@ -107,7 +107,7 @@ describe('fetch instrumentation - urlPatternsToIgnore', () => {
   });
 
   it('should ignore creating span according to the given urlPatternsToIgnore', (done) => {
-    epsagon.init({ token: 'sdsfdfas', appName: 'test app', isTest: true, urlPatternsToIgnore: [".*place.*"] });
+    epsagon.init({ token: 'sdfsdfdf', appName: 'test app', isTest: true, urlPatternsToIgnore: [".*place.*"] });
     window.fetch('https://jsonplaceholder.typicode.com/photos/').then(() => {
       setTimeout(() => {
         chai.assert.notExists(spyCreateSpan.returnValues[0]);
