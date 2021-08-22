@@ -90,7 +90,8 @@ describe('fetch instrumentation', () => {
   }).timeout(7000);
 });
 
-describe('fetch instrumentation - ignore url', () => {
+describe('fetch instrumentation - urlPatternsToIgnore', () => {
+  
   beforeEach(() => {
     Object.defineProperty(global.window.document, 'readyState', {
       writable: true,
@@ -106,7 +107,7 @@ describe('fetch instrumentation - ignore url', () => {
   });
 
   it('should ignore creating span according to the given urlPatternsToIgnore', (done) => {
-    epsagon.init({ token: 'sdfsdfas', appName: 'test app', isTest: true, urlPatternsToIgnore: [".*place.*"] });
+    epsagon.init({ token: 'sdsfdfas', appName: 'test app', isTest: true, urlPatternsToIgnore: [".*place.*"] });
     window.fetch('https://jsonplaceholder.typicode.com/photos/').then(() => {
       setTimeout(() => {
         chai.assert.notExists(spyCreateSpan.returnValues[0]);
