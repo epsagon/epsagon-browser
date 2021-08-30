@@ -6,6 +6,7 @@ import EpsagonFormatter from './formatter';
 import EpsagonResourceManager from './resource-manager';
 import EpsagonIPCalculator from './ip-calculator';
 import EpsagonUtils from './utils';
+import {loggingErrorHandler} from "@opentelemetry/core";
 
 const rootType = {
   EPS: 'epsagon_init',
@@ -222,6 +223,10 @@ class EpsagonExporter extends CollectorTraceExporter {
       return attr.key !== spanAttributeNames.RESPONSE_CONTENT_LENGTH_EPS;
     });
     return { attributesLength, span, spanAttributes };
+  }
+
+  send(objects, onSuccess, onError) {
+    super.send(objects, onSuccess, loggingErrorHandler());
   }
 }
 
