@@ -11,6 +11,10 @@ import EpsagonDocumentLoadInstrumentation from './instrumentation/documentLoadIn
 import EpsagonExporter from './exporter';
 import EpsagonUtils from './utils';
 import EpsagonRedirectInstrumentation from './instrumentation/redirectInstrumentation';
+import {
+  setGlobalErrorHandler,
+  loggingErrorHandler, globalErrorHandler
+} from "@opentelemetry/core";
 
 const { CompositePropagator, HttpTraceContextPropagator } = require('@opentelemetry/core');
 const parser = require('ua-parser-js');
@@ -20,6 +24,7 @@ let existingTracer;
 let epsSpan;
 const DEFAULT_APP_NAME = 'Epsagon Application';
 const PAGE_LOAD_TIMEOUT = 30000;
+
 
 class EpsagonSpan {
   constructor(tracer) {
@@ -140,12 +145,15 @@ function init(_configData) {
     metadataOnly: configData.metadataOnly,
   };
 
+  setGlobalErrorHandler(loggingErrorHandler());
+
   const provider = new WebTracerProvider();
 
   /* eslint-disable no-undef */
   const userAgent = parser(navigator.userAgent);
 
   const exporter = new EpsagonExporter(collectorOptions, userAgent);
+
 
   provider.addSpanProcessor(new BatchSpanProcessor(exporter));
 
