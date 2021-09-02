@@ -3,6 +3,7 @@
 import { ROOT_CONTEXT } from '@opentelemetry/api';
 import { DocumentLoadInstrumentation } from '@opentelemetry/instrumentation-document-load';
 import EpsagonUtils from '../utils';
+import { diag } from "@opentelemetry/api";
 
 const api = require('@opentelemetry/api');
 
@@ -26,15 +27,17 @@ class EpsagonDocumentLoadInstrumentation extends DocumentLoadInstrumentation {
   }
 
   _startSpan(spanName, performanceName, entries) {
+    diag.debug('start span with name: ', spanName);
     // drop document fetch events
     if (spanName === 'documentFetch') {
       return undefined;
     }
-    const initialSpan = super._startSpan(spanName, performanceName, entries, this.epsParentSpan.currentSpan);
+    const initialSpan = super._startSpan(spanName, performanceName, entries, this.epsParentSpan.currentSpan);    
     if (initialSpan && !this.epsParentSpan.currentSpan) {
       this.epsParentSpan.currentSpan = initialSpan;
     }
     EpsagonUtils.addEpsSpanAttrs(initialSpan, this.epsParentSpan);
+    diag.debug('initialSpan: ', initialSpan);
     return initialSpan;
   }
 
@@ -55,6 +58,7 @@ class EpsagonDocumentLoadInstrumentation extends DocumentLoadInstrumentation {
   }
 
   reportError(event) {
+    diag.debug('DocumentLoadInstrumentation: reportError');
     const error = event.error ? event.error : event.reason;
     const failedToExportError = (this._includes(error.message, 'Failed to export with XHR (status: 502)')) || this._includes(error, 'Failed to export with XHR (status: 502)');
     if (error && failedToExportError) {
@@ -73,7 +77,8 @@ class EpsagonDocumentLoadInstrumentation extends DocumentLoadInstrumentation {
     };
     EpsagonUtils.addEpsSpanAttrs(span, this.epsParentSpan);
     span.setStatus({ code: 2 });
-    span.end();
+    diag.debug('error span: ', span);
+    span.end();    
   }
 
   /* eslint-disable no-undef */

@@ -114,6 +114,8 @@ function init(_configData) {
     diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.DEBUG)
   }
 
+  diag.info('configData: ', configData);
+
   if (configData.isEpsagonDisabled) {
     console.log('epsagon disabled, tracing not running');
     return undefined;
