@@ -5,6 +5,7 @@ import { XMLHttpRequestInstrumentation } from '@opentelemetry/instrumentation-xm
 const api = require('@opentelemetry/api');
 const core1 = require('@opentelemetry/core');
 const semanticConventions1 = require('@opentelemetry/semantic-conventions');
+const diag = api.diag;
 
 class EpsagonXMLHttpRequestInstrumentation extends XMLHttpRequestInstrumentation {
   constructor(config, parentSpan, options) {
@@ -15,9 +16,9 @@ class EpsagonXMLHttpRequestInstrumentation extends XMLHttpRequestInstrumentation
 
   // create span copied over so parent span can be added at creation
   _createSpan(xhr, url, method) {
-    api.diag.debug('xmlHttpInstrumentation: create span for url: ', url, 'method: ', method);
+    diag.debug('xmlHttpInstrumentation: create span for url: ', url, 'method: ', method);
     if (core1.isUrlIgnored(url, this._getConfig().ignoreUrls)) {
-      api.diag.debug('ignoring span as url matches ignored url');
+      diag.debug('ignoring span as url matches ignored url');
       return undefined;
     }
     const spanName = `HTTP ${method.toUpperCase()}`;
@@ -34,12 +35,12 @@ class EpsagonXMLHttpRequestInstrumentation extends XMLHttpRequestInstrumentation
       span: currentSpan,
       spanUrl: url,
     });
-    api.diag.debug('xmlHttpInstrumentation: created span: ', currentSpan);
+    diag.debug('xmlHttpInstrumentation: created span: ', currentSpan);
     return currentSpan;
   }
 
   _addFinalSpanAttributes(span, xhrMem, spanUrl) {
-    api.diag.debug('xmlHttpInstrumentation: before add final attributes: ', span);
+    diag.debug('xmlHttpInstrumentation: before add final attributes: ', span);
     super._addFinalSpanAttributes(span, xhrMem, spanUrl);
     let responseBody = xhrMem.xhrInstance.response;
 
@@ -59,7 +60,7 @@ class EpsagonXMLHttpRequestInstrumentation extends XMLHttpRequestInstrumentation
       }
       span.setAttribute('http.response_content_length', xhrMem.xhrInstance.getResponseHeader('content-length'));
       span.setAttribute('http.request.body', xhrMem.xhrInstance.__zone_symbol__xhrTask.data.args[0]);
-      api.diag.debug('xmlHttpInstrumentation: after add final attributes: ', span);
+      diag.debug('xmlHttpInstrumentation: after add final attributes: ', span);
     }
   }
 
