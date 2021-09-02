@@ -24,7 +24,7 @@ class EpsagonFetchInstrumentation extends FetchInstrumentation {
         diag.debug('input: ', input, ' init: ', init);
         const url = input instanceof Request ? input.url : input;
         const options = input instanceof Request ? input : init || {};
-        diag.debug(`url: ${url}, options: ${options} `);
+        diag.debug('url: ', url, 'options: ', options);
         if (options.eps) {
           // if epsagon request, ignore and dont send through eps param
           diag.debug("epsagon request. ignore and don't send through eps param");
@@ -108,9 +108,9 @@ class EpsagonFetchInstrumentation extends FetchInstrumentation {
           }
         }
         return new Promise((resolve, reject) => api.context.with(api.trace.setSpan(api.context.active(), createdSpan), () => {
-          diag.debug(`Before add headers: url: ${url}, options: ${options} `);
+          diag.debug('Before add headers: url: ', url, 'options: ', options);
           plugin._addHeaders(options, url);
-          diag.debug(`After add headers: url: ${url}, options: ${options} `);
+          diag.debug('After add headers: url: ', url , 'options: ', options);
           plugin._tasksCount += 1;
           return original
             .apply(this, [url, options])
@@ -132,7 +132,7 @@ class EpsagonFetchInstrumentation extends FetchInstrumentation {
     }
     const method = (options.method || 'GET').toUpperCase();
     const spanName = `HTTP ${method}`;
-    diag.debug(`create span: url: ${url}, options: ${options} `);
+    diag.debug('create span: url: ', url , 'options: ', options);
 
     let span;
     if (this.globalOptions.metadataOnly) {

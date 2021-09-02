@@ -29,7 +29,7 @@ class EpsagonDocumentLoadInstrumentation extends DocumentLoadInstrumentation {
   _startSpan(spanName, performanceName, entries) {
     diag.debug('start span with name: ', spanName);
     // drop document fetch events
-    if (spanName === 'documentFetch') {      
+    if (spanName === 'documentFetch') {
       return undefined;
     }
     const initialSpan = super._startSpan(spanName, performanceName, entries, this.epsParentSpan.currentSpan);    

@@ -99,7 +99,7 @@ function handleLogLevel(_logLevel) {
 
 function init(_configData) {
   const configData = _configData;
-  
+
   if (configData.logLevel) {
     handleLogLevel(configData.logLevel)
   }
@@ -110,7 +110,7 @@ function init(_configData) {
   }
 
   diag.info('configData: ', configData);
-  
+
   if (configData.isEpsagonDisabled) {
     console.log('epsagon disabled, tracing not running');
     return undefined;

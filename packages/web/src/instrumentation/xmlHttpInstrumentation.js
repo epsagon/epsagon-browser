@@ -15,7 +15,7 @@ class EpsagonXMLHttpRequestInstrumentation extends XMLHttpRequestInstrumentation
 
   // create span copied over so parent span can be added at creation
   _createSpan(xhr, url, method) {
-    api.diag.debug(`xmlHttpInstrumentation: create span for url: ${url}, method: ${method} `);
+    api.diag.debug('xmlHttpInstrumentation: create span for url: ', url, 'method: ', method);
     if (core1.isUrlIgnored(url, this._getConfig().ignoreUrls)) {
       api.diag.debug('ignoring span as url matches ignored url');
       return undefined;
@@ -59,7 +59,8 @@ class EpsagonXMLHttpRequestInstrumentation extends XMLHttpRequestInstrumentation
       }
       span.setAttribute('http.response_content_length', xhrMem.xhrInstance.getResponseHeader('content-length'));
       span.setAttribute('http.request.body', xhrMem.xhrInstance.__zone_symbol__xhrTask.data.args[0]);
-      api.diag.debug('xmlHttpInstrumentation: after add final attributes: ', span);    }
+      api.diag.debug('xmlHttpInstrumentation: after add final attributes: ', span);
+    }
   }
 
   // adds xhr to the xhr mem so we can parse response in final span attributes

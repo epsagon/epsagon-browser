@@ -67,7 +67,7 @@ class EpsagonExporter extends CollectorTraceExporter {
 
       Object.keys(spansList).forEach((spanIndex) => {
         const spanSubList = spansList[spanIndex].spans;
-        diag.debug(`Handle spans for index ${spanIndex}`);
+        diag.debug('Handle spans for index ', spanIndex);
 
         /* eslint-disable no-restricted-syntax */
         for (const spanSubIndex in spanSubList) {
@@ -120,7 +120,7 @@ class EpsagonExporter extends CollectorTraceExporter {
               rootSpan.doc.position = spanIndex;
 
               // replace root span with document load
-              if (span.name === spanAttributeNames.DOCUMENT_LOAD_SPAN_NAME) {                
+              if (span.name === spanAttributeNames.DOCUMENT_LOAD_SPAN_NAME) {
                 rootSpan.rootType = rootType.DOC;
                 rootSpan.eps.remove = true;
                 rootSpan.doc.subPosition = spanSubIndex;
@@ -134,7 +134,7 @@ class EpsagonExporter extends CollectorTraceExporter {
               attributesLength += 1;
               spanAttributes[attributesLength] = formattedSpan.operation;
               attributesLength += 1;
-            } else if (span.name === spanAttributeNames.ROUTE_CHANGE) {  
+            } else if (span.name === spanAttributeNames.ROUTE_CHANGE) {
               diag.debug('span name is route_change');
               rootSpan.rootType = rootType.REDIR;
 
@@ -178,7 +178,7 @@ class EpsagonExporter extends CollectorTraceExporter {
   }
 
   static handleErrors(errorSpans, _spansList, rootSpan) {
-    diag.debug('handle errors:');
+    diag.debug('handle errors:', errorSpans);
     const spansList = _spansList;
     if (rootSpan.rootType === rootType.REDIR || rootSpan.rootType === rootType.DOC) {
       diag.debug('rootType:', rootType);
