@@ -21,16 +21,18 @@ class EpsagonFetchInstrumentation extends FetchInstrumentation {
     return (original) => {
       const plugin = this;
       return function patchConstructor(input, init) {
-        diag.debug(`input: ${input}, init: ${init} `);
+        diag.debug('input: ', input, ' init: ', init);
         const url = input instanceof Request ? input.url : input;
         const options = input instanceof Request ? input : init || {};
         diag.debug(`url: ${url}, options: ${options} `);
         if (options.eps) {
           // if epsagon request, ignore and dont send through eps param
+          diag.debug("epsagon request. ignore and don't send through eps param");
           return original.apply(this, [url, {}]);
         }
         const createdSpan = plugin._createSpan(url, options);
         if (!createdSpan) {
+          diag.debug('span was not created. apply the original function');
           return original.apply(this, [url, options]);
         }
         const spanData = plugin._prepareSpanData(url);

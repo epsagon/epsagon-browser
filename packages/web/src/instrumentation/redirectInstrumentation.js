@@ -1,4 +1,5 @@
 import EpsagonUtils from '../utils';
+import { diag } from "@opentelemetry/api";
 
 /* eslint-disable no-undef */
 class EpsagonRedirectInstrumentation {
@@ -31,6 +32,7 @@ class EpsagonRedirectInstrumentation {
     }
     EpsagonUtils.addEpsSpanAttrs(span, this.parentSpan);
     span.setStatus({ code: 0 });
+    diag.debug('create span for redirect', span);
     span.end();
   }
 }
