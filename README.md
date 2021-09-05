@@ -43,6 +43,19 @@ epsagon.init({
 })
 ```
 
+### Import and install as webpack bundle
+
+```html
+<script type="text/javascript" src="<Bundle URL path"></script>
+<script>
+  Epsagon.default.init({
+    token: 'epsagon-token',
+    appName: 'app-name-stage',
+  })
+</script>
+```
+
+
 ## Custom Tags
 
 To add additional information to spans there are two methods available. Batch add user identity information with the ```epsagon.identity``` function, or use the ```epsagon.tag``` function to add your own custom information.
