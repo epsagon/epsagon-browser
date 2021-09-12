@@ -1,11 +1,12 @@
-name: Release
+name: CI
 on:
+  pull_request:
   push:
     branches:
       - main
 jobs:
-  release:
-    name: Release
+  ci:
+    name: CI
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -16,11 +17,13 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 12
-      
-      - name: Install dependencies @epsagon/web
+
+      - name: Install dependencies @epsagon/web and run tests
         working-directory: ./packages/web
         run: npm install && npm run test && npm run build
+
       - name: Release @epsagon/web
+        if: ${{ github.event_name == 'push' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
