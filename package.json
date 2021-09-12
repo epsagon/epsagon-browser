@@ -1,0 +1,30 @@
+{
+  "name": "epsagon-browser",
+  "version": "1.0.0",
+  "description": "<p align=\"center\">   <a href=\"https://epsagon.com\" target=\"_blank\" align=\"center\">     <img src=\"https://cdn2.hubspot.net/hubfs/4636301/Positive%20RGB_Logo%20Horizontal%20-01.svg\" width=\"300\">   </a>   <br /> </p>",
+  "main": "commitlint.config.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/epsagon/epsagon-browser.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/epsagon/epsagon-browser/issues"
+  },
+  "homepage": "https://github.com/epsagon/epsagon-browser#readme",
+  "devDependencies": {
+    "husky": "^7.0.2",
+    "@commitlint/cli": "^9.1.2",
+    "@commitlint/config-angular": "^7.1.2",
+    "@commitlint/config-conventional": "^7.1.2"
+  }
+}
