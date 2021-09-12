@@ -1,12 +1,12 @@
-name: Release
+name: CI
 on:
   pull_request:
   push:
     branches:
       - main
 jobs:
-  release:
-    name: Release
+  ci:
+    name: CI
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
