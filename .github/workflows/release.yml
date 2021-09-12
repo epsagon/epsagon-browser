@@ -1,8 +1,5 @@
 name: Release
 on:
-  pull_request:
-    branches:
-      - main
   push:
     branches:
       - main
@@ -20,24 +17,24 @@ jobs:
         with:
           node-version: 12
 
-      - name: Install dependencies @epsagon/web
+      - name: Install dependencies @epsagon/web and run tests
         working-directory: ./packages/web
         run: npm install && npm run test && npm run build
+
+      if: ${{ github.event_name == 'push' }}
       - name: Release @epsagon/web
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         working-directory: ./packages/web
         run: npm run semantic-release
-
       - name: Install dependencies @epsagon/react
         working-directory: ./packages/react
         run: npm install && npm run test && npm run build
+      if: ${{ github.event_name == 'push' }}
       - name: Release @epsagon/react
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         working-directory: ./packages/react
         run: npm run semantic-release
-
-
