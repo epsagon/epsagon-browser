@@ -22,7 +22,6 @@ jobs:
         working-directory: ./packages/web
         run: npm install && npm run test && npm run build
 
-      if: ${{ github.event_name == 'push' }}
       - name: Release @epsagon/web
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -32,7 +31,6 @@ jobs:
       - name: Install dependencies @epsagon/react
         working-directory: ./packages/react
         run: npm install && npm run test && npm run build
-      if: ${{ github.event_name == 'push' }}
       - name: Release @epsagon/react
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
