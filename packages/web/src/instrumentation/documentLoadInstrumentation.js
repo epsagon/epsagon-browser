@@ -1,9 +1,8 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable max-len */
-import { ROOT_CONTEXT } from '@opentelemetry/api';
 import { DocumentLoadInstrumentation } from '@opentelemetry/instrumentation-document-load';
+import { diag } from '@opentelemetry/api';
 import EpsagonUtils from '../utils';
-import { diag } from "@opentelemetry/api";
 
 const api = require('@opentelemetry/api');
 
@@ -78,7 +77,7 @@ class EpsagonDocumentLoadInstrumentation extends DocumentLoadInstrumentation {
     EpsagonUtils.addEpsSpanAttrs(span, this.epsParentSpan);
     span.setStatus({ code: 2 });
     diag.debug('error span: ', span);
-    span.end();    
+    span.end();
   }
 
   /* eslint-disable no-undef */

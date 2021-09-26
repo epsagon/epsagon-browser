@@ -1,3 +1,5 @@
+import { VERSION } from './consts';
+
 class EpsagonResourceManager {
   constructor(config) {
     this.config = config;
@@ -20,6 +22,12 @@ class EpsagonResourceManager {
     resourcesLength += 1;
     convertedSpans.resourceSpans[0].resource.attributes[resourcesLength] = { key: 'browser.operating_system_version', value: { stringValue: userAgent.os.version } };
     resourcesLength += 1;
+
+    // ADD VERSION IF EXISTS
+    if (VERSION) {
+      convertedSpans.resourceSpans[0].resource.attributes[resourcesLength] = { key: 'epsagon.version', value: { stringValue: VERSION } };
+      resourcesLength += 1;
+    }
 
     // ADD IP IF EXISTS
     if (userAgent.browser.ip) {

@@ -1,6 +1,6 @@
-module.exports.VERSION = require('../package.json').version;
+const VERSION = require('../package.json').version;
 
-module.exports.ROOT_TYPE = {
+const ROOT_TYPE = {
   EPS: 'epsagon_init',
   DOC: 'document_load',
   REDIR: 'redirect',
@@ -9,7 +9,7 @@ module.exports.ROOT_TYPE = {
   EXCEPTION: 'exception',
 };
 
-module.exports.SPAN_ATTRIBUTES_NAMES = {
+const SPAN_ATTRIBUTES_NAMES = {
   BROWSER_HOST: 'browser.host',
   BROWSER_PATH: 'browser.path',
   HOST_HEADER: 'http.host',
@@ -27,3 +27,5 @@ module.exports.SPAN_ATTRIBUTES_NAMES = {
   EXCEPTION_STACK: 'exception.stacktrace',
   MESSAGE: 'message',
 };
+
+export { VERSION, ROOT_TYPE, SPAN_ATTRIBUTES_NAMES };
