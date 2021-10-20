@@ -107,8 +107,8 @@ describe('tags tests', () => {
   it('identify adds tags to epsSpan', (done) => {
     const options = {
       userId: 'test user',
-      name: 'test name',
-      email: 'test email',
+      userName: 'test name',
+      userEmail: 'test email',
       companyId: 'company id test',
       companyName: 'company name',
     };
