@@ -5,8 +5,8 @@ class EpsagonUtils {
         userId, userName, userEmail, companyId, companyName,
       } = parentSpan.identifyFields;
       if (userId) span.setAttribute('user.id', parentSpan.identifyFields.userId);
-      if (userName) span.setAttribute('user.name', parentSpan.identifyFields.name);
-      if (userEmail) span.setAttribute('user.email', parentSpan.identifyFields.email);
+      if (userName) span.setAttribute('user.name', parentSpan.identifyFields.userName);
+      if (userEmail) span.setAttribute('user.email', parentSpan.identifyFields.userEmail);
       if (companyId) span.setAttribute('company.id', parentSpan.identifyFields.companyId);
       if (companyName) span.setAttribute('company.name', parentSpan.identifyFields.companyName);
     }

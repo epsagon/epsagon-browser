@@ -63,8 +63,8 @@ function identify(options) {
   if (epsSpan) {
     epsSpan.identifyFields = {
       userId: options.userId,
-      name: options.name,
-      email: options.email,
+      userName: options.userName,
+      userEmail: options.userEmail,
       companyId: options.companyId,
       companyName: options.companyName,
     };
