@@ -4,17 +4,14 @@
 import { BatchSpanProcessor } from '@opentelemetry/tracing';
 import { WebTracerProvider } from '@opentelemetry/web';
 import { ZoneContextManager } from '@opentelemetry/context-zone';
-import { diag, DiagConsoleLogger, DiagLogLevel } from "@opentelemetry/api";
+import { diag, DiagConsoleLogger, DiagLogLevel } from '@opentelemetry/api';
+import { setGlobalErrorHandler, loggingErrorHandler } from '@opentelemetry/core';
 import EpsagonFetchInstrumentation from './instrumentation/fetchInstrumentation';
 import EpsagonXMLHttpRequestInstrumentation from './instrumentation/xmlHttpInstrumentation';
 import EpsagonDocumentLoadInstrumentation from './instrumentation/documentLoadInstrumentation';
 import EpsagonExporter from './exporter';
 import EpsagonUtils from './utils';
 import EpsagonRedirectInstrumentation from './instrumentation/redirectInstrumentation';
-import {
-  setGlobalErrorHandler,
-  loggingErrorHandler, globalErrorHandler
-} from "@opentelemetry/core";
 
 const { CompositePropagator, HttpTraceContextPropagator } = require('@opentelemetry/core');
 const parser = require('ua-parser-js');
@@ -24,7 +21,6 @@ let existingTracer;
 let epsSpan;
 const DEFAULT_APP_NAME = 'Epsagon Application';
 const PAGE_LOAD_TIMEOUT = 30000;
-
 
 class EpsagonSpan {
   constructor(tracer) {
@@ -82,36 +78,36 @@ function handleLogLevel(_logLevel) {
   switch (_logLevel) {
     case 'ALL':
       logLevel = DiagLogLevel.ALL;
-      break
+      break;
     case 'DEBUG':
       logLevel = DiagLogLevel.DEBUG;
-      break
+      break;
     case 'INFO':
       logLevel = DiagLogLevel.INFO;
-      break
+      break;
     case 'WARN':
-      logLevel = DiagLogLevel.WARN
-      break
+      logLevel = DiagLogLevel.WARN;
+      break;
     case 'ERROR':
-      logLevel = DiagLogLevel.ERROR
-      break
+      logLevel = DiagLogLevel.ERROR;
+      break;
       // Default is Open Telemetry default which is DiagLogLevel.INFO
     default:
-      return
+      return;
   }
-  diag.setLogger(new DiagConsoleLogger(), logLevel)
+  diag.setLogger(new DiagConsoleLogger(), logLevel);
 }
 
 function init(_configData) {
   const configData = _configData;
 
   if (configData.logLevel) {
-    handleLogLevel(configData.logLevel)
+    handleLogLevel(configData.logLevel);
   }
 
   // Epsagon debug overrides configData.logLevel
   if (configData.epsagonDebug) {
-    diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.DEBUG)
+    diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.DEBUG);
   }
 
   diag.info('configData: ', configData);
@@ -156,7 +152,6 @@ function init(_configData) {
 
   const exporter = new EpsagonExporter(collectorOptions, userAgent);
 
-
   provider.addSpanProcessor(new BatchSpanProcessor(exporter));
 
   provider.register({
@@ -185,9 +180,9 @@ function init(_configData) {
   }
 
   let blackListedURLs = [];
-  if(configData.urlPatternsToIgnore) {
+  if (configData.urlPatternsToIgnore) {
     blackListedURLs = configData.urlPatternsToIgnore;
-    blackListedURLs.forEach(function (item, index, arr){
+    blackListedURLs.forEach((item, index, arr) => {
       arr[index] = RegExp(item);
     });
   }

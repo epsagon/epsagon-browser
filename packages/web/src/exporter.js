@@ -142,7 +142,7 @@ class EpsagonExporter extends CollectorTraceExporter {
         spansList.splice(rootSpan.eps.position, 1);
       }
 
-      let convertedSpansWithRecourseAtts = this.resourceManager.addResourceAttrs(convertedSpans, this.userAgent);
+      const convertedSpansWithRecourseAtts = this.resourceManager.addResourceAttrs(convertedSpans, this.userAgent);
       diag.debug('converted spans:', convertedSpansWithRecourseAtts);
       return convertedSpansWithRecourseAtts;
     } catch (err) {
