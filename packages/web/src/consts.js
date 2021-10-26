@@ -1,5 +1,16 @@
 const VERSION = require('../package.json').version;
 
+const DEFAULT_CONFIGURATIONS = {
+  appName: 'Epsagon Application',
+  collectorURL: 'https://opentelemetry.tc.epsagon.com/traces',
+  pageLoadTimeout: 30000,
+  redirectTimeout: 3000,
+  maxBatchSize: 512,
+  maxQueueSize: 2048,
+  scheduledDelayMillis: 5000,
+  exportTimeoutMillis: 30000,
+};
+
 const ROOT_TYPE = {
   EPS: 'epsagon_init',
   DOC: 'document_load',
@@ -28,4 +39,6 @@ const SPAN_ATTRIBUTES_NAMES = {
   MESSAGE: 'message',
 };
 
-export { VERSION, ROOT_TYPE, SPAN_ATTRIBUTES_NAMES };
+export {
+  VERSION, DEFAULT_CONFIGURATIONS, ROOT_TYPE, SPAN_ATTRIBUTES_NAMES
+};

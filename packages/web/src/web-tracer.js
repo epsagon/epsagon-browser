@@ -12,6 +12,7 @@ import EpsagonDocumentLoadInstrumentation from './instrumentation/documentLoadIn
 import EpsagonExporter from './exporter';
 import EpsagonUtils from './utils';
 import EpsagonRedirectInstrumentation from './instrumentation/redirectInstrumentation';
+import { DEFAULT_CONFIGURATIONS } from './consts';
 
 const { CompositePropagator, HttpTraceContextPropagator } = require('@opentelemetry/core');
 const parser = require('ua-parser-js');
@@ -19,8 +20,6 @@ const { registerInstrumentations } = require('@opentelemetry/instrumentation');
 
 let existingTracer;
 let epsSpan;
-const DEFAULT_APP_NAME = 'Epsagon Application';
-const PAGE_LOAD_TIMEOUT = 30000;
 
 class EpsagonSpan {
   constructor(tracer) {
@@ -39,7 +38,7 @@ class EpsagonSpan {
   }
 
   get currentSpan() {
-    if (this._time !== null && this._time + PAGE_LOAD_TIMEOUT >= Date.now()) {
+    if (this._time !== null && this._time + DEFAULT_CONFIGURATIONS.pageLoadTimeout >= Date.now()) {
       return this._currentSpan;
     }
     this.currentSpan = null;
@@ -128,10 +127,10 @@ function init(_configData) {
   }
 
   if (!configData.collectorURL) {
-    configData.collectorURL = 'https://opentelemetry.tc.epsagon.com/traces';
+    configData.collectorURL = DEFAULT_CONFIGURATIONS.collectorURL;
   }
 
-  const appName = configData.appName || DEFAULT_APP_NAME;
+  const appName = configData.appName || DEFAULT_CONFIGURATIONS.appName;
 
   const collectorOptions = {
     serviceName: appName,
@@ -143,6 +142,25 @@ function init(_configData) {
     metadataOnly: configData.metadataOnly,
   };
 
+  const maxExportBatchSize = configData.maxBatchSize || DEFAULT_CONFIGURATIONS.maxBatchSize;
+  const maxQueueSize = configData.maxQueueSize || DEFAULT_CONFIGURATIONS.maxQueueSize;
+  if (maxExportBatchSize > maxQueueSize) {
+    diag.error('maxExportBatchSize has to be smaller or equal to maxQueueSize, could not start Epsagon');
+    return undefined;
+  }
+
+  const scheduledDelayMillis = configData.scheduledDelayMillis
+  || DEFAULT_CONFIGURATIONS.scheduledDelayMillis;
+  const exportTimeoutMillis = configData.exportTimeoutMillis
+  || DEFAULT_CONFIGURATIONS.exportTimeoutMillis;
+
+  const batchProcessorConfig = {
+    maxExportBatchSize,
+    maxQueueSize,
+    scheduledDelayMillis,
+    exportTimeoutMillis,
+  };
+
   setGlobalErrorHandler(loggingErrorHandler());
 
   const provider = new WebTracerProvider();
@@ -152,7 +170,7 @@ function init(_configData) {
 
   const exporter = new EpsagonExporter(collectorOptions, userAgent);
 
-  provider.addSpanProcessor(new BatchSpanProcessor(exporter));
+  provider.addSpanProcessor(new BatchSpanProcessor(exporter, batchProcessorConfig));
 
   provider.register({
     contextManager: new ZoneContextManager(),
@@ -183,11 +201,11 @@ function init(_configData) {
   if (configData.urlPatternsToIgnore) {
     blackListedURLs = configData.urlPatternsToIgnore;
     blackListedURLs.forEach((item, index, arr) => {
+      // eslint-disable-next-line no-param-reassign
       arr[index] = RegExp(item);
     });
   }
 
-  const resetTimer = 3000;
   registerInstrumentations({
     tracerProvider: provider,
     instrumentations: [
@@ -200,7 +218,7 @@ function init(_configData) {
         ignoreUrls: blackListedURLs,
         propagateTraceHeaderCorsUrls: whiteListedURLsRegex,
       }, epsSpan, { metadataOnly: configData.metadataOnly }),
-      new EpsagonRedirectInstrumentation(tracer, epsSpan, resetTimer),
+      new EpsagonRedirectInstrumentation(tracer, epsSpan, DEFAULT_CONFIGURATIONS.redirectTimeout),
     ],
   });
 
