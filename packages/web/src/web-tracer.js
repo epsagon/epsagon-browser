@@ -5,7 +5,7 @@ import { BatchSpanProcessor } from '@opentelemetry/tracing';
 import { WebTracerProvider } from '@opentelemetry/web';
 import { ZoneContextManager } from '@opentelemetry/context-zone';
 import { diag, DiagConsoleLogger, DiagLogLevel } from '@opentelemetry/api';
-import { setGlobalErrorHandler, loggingErrorHandler } from '@opentelemetry/core';
+import { setGlobalErrorHandler, loggingErrorHandler, TraceIdRatioBasedSampler } from '@opentelemetry/core';
 import EpsagonFetchInstrumentation from './instrumentation/fetchInstrumentation';
 import EpsagonXMLHttpRequestInstrumentation from './instrumentation/xmlHttpInstrumentation';
 import EpsagonDocumentLoadInstrumentation from './instrumentation/documentLoadInstrumentation';
@@ -111,8 +111,14 @@ function init(_configData) {
 
   diag.info('configData: ', configData);
 
+  let samplingRatio = DEFAULT_CONFIGURATIONS.networkSamplingRatio;
+
+  if (configData.networkSamplingRatio || configData.networkSamplingRatio === 0) {
+    samplingRatio = configData.networkSamplingRatio;
+  }
+
   if (configData.isEpsagonDisabled) {
-    console.log('epsagon disabled, tracing not running');
+    console.log('Epsagon disabled, tracing is not running');
     return undefined;
   }
 
@@ -145,25 +151,20 @@ function init(_configData) {
   const maxExportBatchSize = configData.maxBatchSize || DEFAULT_CONFIGURATIONS.maxBatchSize;
   const maxQueueSize = configData.maxQueueSize || DEFAULT_CONFIGURATIONS.maxQueueSize;
   if (maxExportBatchSize > maxQueueSize) {
-    diag.error('maxExportBatchSize has to be smaller or equal to maxQueueSize, could not start Epsagon');
+    diag.error('maxExportBatchSize cannot be bigger than maxQueueSize, could not start Epsagon');
     return undefined;
   }
-
-  const scheduledDelayMillis = configData.scheduledDelayMillis
-  || DEFAULT_CONFIGURATIONS.scheduledDelayMillis;
-  const exportTimeoutMillis = configData.exportTimeoutMillis
-  || DEFAULT_CONFIGURATIONS.exportTimeoutMillis;
 
   const batchProcessorConfig = {
     maxExportBatchSize,
     maxQueueSize,
-    scheduledDelayMillis,
-    exportTimeoutMillis,
+    scheduledDelayMillis: configData.scheduledDelayMillis || DEFAULT_CONFIGURATIONS.scheduledDelayMillis,
+    exportTimeoutMillis: configData.exportTimeoutMillis || DEFAULT_CONFIGURATIONS.exportTimeoutMillis,
   };
 
   setGlobalErrorHandler(loggingErrorHandler());
 
-  const provider = new WebTracerProvider();
+  const provider = new WebTracerProvider({ sampler: new TraceIdRatioBasedSampler(samplingRatio) });
 
   /* eslint-disable no-undef */
   const userAgent = parser(navigator.userAgent);

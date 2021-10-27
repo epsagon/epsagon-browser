@@ -9,6 +9,7 @@ const DEFAULT_CONFIGURATIONS = {
   maxQueueSize: 2048,
   scheduledDelayMillis: 5000,
   exportTimeoutMillis: 30000,
+  networkSamplingRatio: 1,
 };
 
 const ROOT_TYPE = {
@@ -40,5 +41,5 @@ const SPAN_ATTRIBUTES_NAMES = {
 };
 
 export {
-  VERSION, DEFAULT_CONFIGURATIONS, ROOT_TYPE, SPAN_ATTRIBUTES_NAMES
+  VERSION, DEFAULT_CONFIGURATIONS, ROOT_TYPE, SPAN_ATTRIBUTES_NAMES,
 };
