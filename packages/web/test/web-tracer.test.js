@@ -35,6 +35,17 @@ describe('init tests', () => {
     chai.assert.notExists(res, 'res should be false');
     done();
   });
+
+  it('init function produces tracer and epsSpan even if epsagon is not sampled', (done) => {
+    const res = epsagon.init({
+      token: 'fasdfsafa', appName, isTest: true, networkSamplingRatio: 0,
+    });
+    chai.assert.exists(res.tracer, 'tracer was created');
+    chai.assert.exists(res.epsSpan, 'epsSpan was created');
+    chai.assert.equal(res.tracer.instrumentationLibrary.name, appName, 'app name should be passed into tracer');
+    chai.assert.exists(res.epsSpan.currentSpan, 'current span should have been created');
+    done();
+  });
 });
 
 describe('logging tests', ()  => {

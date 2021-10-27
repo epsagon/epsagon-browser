@@ -4,17 +4,15 @@
 import { BatchSpanProcessor } from '@opentelemetry/tracing';
 import { WebTracerProvider } from '@opentelemetry/web';
 import { ZoneContextManager } from '@opentelemetry/context-zone';
-import { diag, DiagConsoleLogger, DiagLogLevel } from "@opentelemetry/api";
+import { diag, DiagConsoleLogger, DiagLogLevel } from '@opentelemetry/api';
+import { setGlobalErrorHandler, loggingErrorHandler, TraceIdRatioBasedSampler } from '@opentelemetry/core';
 import EpsagonFetchInstrumentation from './instrumentation/fetchInstrumentation';
 import EpsagonXMLHttpRequestInstrumentation from './instrumentation/xmlHttpInstrumentation';
 import EpsagonDocumentLoadInstrumentation from './instrumentation/documentLoadInstrumentation';
 import EpsagonExporter from './exporter';
 import EpsagonUtils from './utils';
 import EpsagonRedirectInstrumentation from './instrumentation/redirectInstrumentation';
-import {
-  setGlobalErrorHandler,
-  loggingErrorHandler, globalErrorHandler
-} from "@opentelemetry/core";
+import { DEFAULT_CONFIGURATIONS } from './consts';
 
 const { CompositePropagator, HttpTraceContextPropagator } = require('@opentelemetry/core');
 const parser = require('ua-parser-js');
@@ -22,9 +20,6 @@ const { registerInstrumentations } = require('@opentelemetry/instrumentation');
 
 let existingTracer;
 let epsSpan;
-const DEFAULT_APP_NAME = 'Epsagon Application';
-const PAGE_LOAD_TIMEOUT = 30000;
-
 
 class EpsagonSpan {
   constructor(tracer) {
@@ -43,7 +38,7 @@ class EpsagonSpan {
   }
 
   get currentSpan() {
-    if (this._time !== null && this._time + PAGE_LOAD_TIMEOUT >= Date.now()) {
+    if (this._time !== null && this._time + DEFAULT_CONFIGURATIONS.pageLoadTimeout >= Date.now()) {
       return this._currentSpan;
     }
     this.currentSpan = null;
@@ -82,42 +77,48 @@ function handleLogLevel(_logLevel) {
   switch (_logLevel) {
     case 'ALL':
       logLevel = DiagLogLevel.ALL;
-      break
+      break;
     case 'DEBUG':
       logLevel = DiagLogLevel.DEBUG;
-      break
+      break;
     case 'INFO':
       logLevel = DiagLogLevel.INFO;
-      break
+      break;
     case 'WARN':
-      logLevel = DiagLogLevel.WARN
-      break
+      logLevel = DiagLogLevel.WARN;
+      break;
     case 'ERROR':
-      logLevel = DiagLogLevel.ERROR
-      break
+      logLevel = DiagLogLevel.ERROR;
+      break;
       // Default is Open Telemetry default which is DiagLogLevel.INFO
     default:
-      return
+      return;
   }
-  diag.setLogger(new DiagConsoleLogger(), logLevel)
+  diag.setLogger(new DiagConsoleLogger(), logLevel);
 }
 
 function init(_configData) {
   const configData = _configData;
 
   if (configData.logLevel) {
-    handleLogLevel(configData.logLevel)
+    handleLogLevel(configData.logLevel);
   }
 
   // Epsagon debug overrides configData.logLevel
   if (configData.epsagonDebug) {
-    diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.DEBUG)
+    diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.DEBUG);
   }
 
   diag.info('configData: ', configData);
 
+  let samplingRatio = DEFAULT_CONFIGURATIONS.networkSamplingRatio;
+
+  if (configData.networkSamplingRatio || configData.networkSamplingRatio === 0) {
+    samplingRatio = configData.networkSamplingRatio;
+  }
+
   if (configData.isEpsagonDisabled) {
-    console.log('epsagon disabled, tracing not running');
+    console.log('Epsagon disabled, tracing is not running');
     return undefined;
   }
 
@@ -132,10 +133,10 @@ function init(_configData) {
   }
 
   if (!configData.collectorURL) {
-    configData.collectorURL = 'https://opentelemetry.tc.epsagon.com/traces';
+    configData.collectorURL = DEFAULT_CONFIGURATIONS.collectorURL;
   }
 
-  const appName = configData.appName || DEFAULT_APP_NAME;
+  const appName = configData.appName || DEFAULT_CONFIGURATIONS.appName;
 
   const collectorOptions = {
     serviceName: appName,
@@ -147,17 +148,30 @@ function init(_configData) {
     metadataOnly: configData.metadataOnly,
   };
 
+  const maxExportBatchSize = configData.maxBatchSize || DEFAULT_CONFIGURATIONS.maxBatchSize;
+  const maxQueueSize = configData.maxQueueSize || DEFAULT_CONFIGURATIONS.maxQueueSize;
+  if (maxExportBatchSize > maxQueueSize) {
+    diag.error('maxExportBatchSize cannot be bigger than maxQueueSize, could not start Epsagon');
+    return undefined;
+  }
+
+  const batchProcessorConfig = {
+    maxExportBatchSize,
+    maxQueueSize,
+    scheduledDelayMillis: configData.scheduledDelayMillis || DEFAULT_CONFIGURATIONS.scheduledDelayMillis,
+    exportTimeoutMillis: configData.exportTimeoutMillis || DEFAULT_CONFIGURATIONS.exportTimeoutMillis,
+  };
+
   setGlobalErrorHandler(loggingErrorHandler());
 
-  const provider = new WebTracerProvider();
+  const provider = new WebTracerProvider({ sampler: new TraceIdRatioBasedSampler(samplingRatio) });
 
   /* eslint-disable no-undef */
   const userAgent = parser(navigator.userAgent);
 
   const exporter = new EpsagonExporter(collectorOptions, userAgent);
 
-
-  provider.addSpanProcessor(new BatchSpanProcessor(exporter));
+  provider.addSpanProcessor(new BatchSpanProcessor(exporter, batchProcessorConfig));
 
   provider.register({
     contextManager: new ZoneContextManager(),
@@ -185,14 +199,14 @@ function init(_configData) {
   }
 
   let blackListedURLs = [];
-  if(configData.urlPatternsToIgnore) {
+  if (configData.urlPatternsToIgnore) {
     blackListedURLs = configData.urlPatternsToIgnore;
-    blackListedURLs.forEach(function (item, index, arr){
+    blackListedURLs.forEach((item, index, arr) => {
+      // eslint-disable-next-line no-param-reassign
       arr[index] = RegExp(item);
     });
   }
 
-  const resetTimer = 3000;
   registerInstrumentations({
     tracerProvider: provider,
     instrumentations: [
@@ -205,7 +219,7 @@ function init(_configData) {
         ignoreUrls: blackListedURLs,
         propagateTraceHeaderCorsUrls: whiteListedURLsRegex,
       }, epsSpan, { metadataOnly: configData.metadataOnly }),
-      new EpsagonRedirectInstrumentation(tracer, epsSpan, resetTimer),
+      new EpsagonRedirectInstrumentation(tracer, epsSpan, DEFAULT_CONFIGURATIONS.redirectTimeout),
     ],
   });
 

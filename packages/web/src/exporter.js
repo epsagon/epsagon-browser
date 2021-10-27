@@ -25,8 +25,8 @@ class EpsagonExporter extends CollectorTraceExporter {
   }
 
   convert(spans) {
-    const errorSpans = spans.filter((s) => s.exceptionData);
     try {
+      const errorSpans = spans.filter((s) => s.exceptionData);
       const convertedSpans = super.convert(spans);
       let spansList = EpsagonUtils.getFirstResourceSpan(convertedSpans).instrumentationLibrarySpans;
       const rootSpan = {
@@ -142,7 +142,7 @@ class EpsagonExporter extends CollectorTraceExporter {
         spansList.splice(rootSpan.eps.position, 1);
       }
 
-      let convertedSpansWithRecourseAtts = this.resourceManager.addResourceAttrs(convertedSpans, this.userAgent);
+      const convertedSpansWithRecourseAtts = this.resourceManager.addResourceAttrs(convertedSpans, this.userAgent);
       diag.debug('converted spans:', convertedSpansWithRecourseAtts);
       return convertedSpansWithRecourseAtts;
     } catch (err) {
@@ -214,6 +214,7 @@ class EpsagonExporter extends CollectorTraceExporter {
     return { attributesLength, span, spanAttributes };
   }
 
+  // eslint-disable-next-line no-unused-vars
   send(objects, onSuccess, onError) {
     super.send(objects, onSuccess, loggingErrorHandler());
   }
