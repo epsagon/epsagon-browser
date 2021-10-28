@@ -90,6 +90,11 @@ Advanced options can be configured as a parameter to the init() method.
 |metadataOnly       |Boolean|`false`       |Whether to send only the metadata (`true`) or also the payloads (`false`)          |
 |propagateTraceHeaderUrls       |Array|`*`       |Which outgoing requests to add traceparent headers to. Defaults to all.          |
 |urlPatternsToIgnore            |Array|[]        |Which outgoing requests to ignore (and not add traceparent to. Default to []   |
+|networkSamplingRatio|Float |1.0       |How many spans are exported, configured between 0.0 (send nothing) to 1.0 (send everything)|
+|maxQueueSize       |Integer|2048      |Maximum queue size, afterwhich spans are dropped |
+|scheduledDelayMillis|Integer|5000|Delay interval in milliseconds between two consecutive exports |
+|exportTimeoutMillis|Integer|30000|How many milliseconds the export can run before it is cancelled|
+|maxBatchSize       |Integer|512  |Maximum batch size of every export. Has to be small or equal to maxQueueSize|
 |isEpsagonDisabled       |Boolean|`false`       |A flag to completely disable Epsagon (can be used for tests or locally)         |
 |epsagonDebug       |Boolean|`false`       |Enable debug prints for troubleshooting. Note: if this flag is true, this will override the logLevel|
 |logLevel       |String|`INFO`       |The default Log level. Could be one of: ```DEBUG```, ```INFO```, ```WARN```, ```ERROR```, ```ALL```.|
