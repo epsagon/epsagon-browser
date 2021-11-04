@@ -5,7 +5,7 @@ const DEFAULT_CONFIGURATIONS = {
   collectorURL: 'https://opentelemetry.tc.epsagon.com/traces',
   pageLoadTimeout: 30000,
   redirectTimeout: 3000,
-  maxBatchSize: 512,
+  maxBatchSize: 1024,
   maxQueueSize: 2048,
   scheduledDelayMillis: 5000,
   exportTimeoutMillis: 30000,
