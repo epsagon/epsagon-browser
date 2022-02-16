@@ -33,7 +33,7 @@ class EpsagonFetchInstrumentation extends FetchInstrumentation {
         const createdSpan = plugin._createSpan(url, options);
         if (!createdSpan) {
           diag.debug('span was not created. apply the original function');
-          return original.apply(this, [url, options]);
+          return original.apply(this, [input, init]);
         }
         const spanData = plugin._prepareSpanData(url);
         function endSpanOnError(span, error) {
