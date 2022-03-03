@@ -7,9 +7,10 @@ import EpsagonUtils from '../utils';
 const api = require('@opentelemetry/api');
 
 class EpsagonDocumentLoadInstrumentation extends DocumentLoadInstrumentation {
-  constructor(parentSpan) {
+  constructor(parentSpan, isErrorCollectionDisabled) {
     super();
     this.epsParentSpan = parentSpan;
+    this.isErrorCollectionDisabled = isErrorCollectionDisabled;
   }
 
   _onDocumentLoaded(event = false) {
@@ -17,7 +18,8 @@ class EpsagonDocumentLoadInstrumentation extends DocumentLoadInstrumentation {
     // Support for event "loadend" is very limited and cannot be used
     /* eslint-disable no-undef */
     window.setTimeout(() => {
-      if (event.error || event.reason) {
+      if ((event.error || event.reason) && !this.isErrorCollectionDisabled) {
+      // if (event.error || event.reason) {
         this.reportError(event);
       } else {
         this._collectPerformance();

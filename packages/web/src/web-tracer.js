@@ -90,7 +90,7 @@ function handleLogLevel(_logLevel) {
     case 'ERROR':
       logLevel = DiagLogLevel.ERROR;
       break;
-      // Default is Open Telemetry default which is DiagLogLevel.INFO
+    // Default is Open Telemetry default which is DiagLogLevel.INFO
     default:
       return;
   }
@@ -207,10 +207,12 @@ function init(_configData) {
     });
   }
 
+  const isErrorCollectionDisabled = _configData.errorDisabled ? _configData.errorDisabled : false;
+
   registerInstrumentations({
     tracerProvider: provider,
     instrumentations: [
-      new EpsagonDocumentLoadInstrumentation(epsSpan),
+      new EpsagonDocumentLoadInstrumentation(epsSpan, isErrorCollectionDisabled),
       new EpsagonFetchInstrumentation({
         ignoreUrls: blackListedURLs,
         propagateTraceHeaderCorsUrls: whiteListedURLsRegex,
@@ -220,7 +222,7 @@ function init(_configData) {
         propagateTraceHeaderCorsUrls: whiteListedURLsRegex,
       }, epsSpan, { metadataOnly: configData.metadataOnly }),
       new EpsagonRedirectInstrumentation(tracer, epsSpan, DEFAULT_CONFIGURATIONS.redirectTimeout),
-    ],
+    ]
   });
 
   return { tracer, epsSpan };

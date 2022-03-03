@@ -12,14 +12,16 @@ This package provides tracing to front end of web applications for the collectio
 
 ## Contents
 
-- [Installation](#installation)
-- [Usage](#usage)
+- [Epsagon Tracing for Web](#epsagon-tracing-for-web)
+  - [Contents](#contents)
+  - [Installation](#installation)
+  - [Usage](#usage)
   - [Custom Tags](#custom-tags)
-- [Configuration](#configuration)
-  - [Trace Header Propagation](#trace-header-propagation)
-- [Getting Help](#getting-help)
-- [Opening Issues](#opening-issues)
-- [License](#license)
+  - [Configuration](#configuration)
+    - [Trace Header Propagation](#trace-header-propagation)
+  - [Getting Help](#getting-help)
+  - [Opening Issues](#opening-issues)
+  - [License](#license)
 
 ## Installation
 
@@ -49,10 +51,10 @@ Options for ```epsagon.identify``` include { userId, userName, userEmail, compan
 
 ```js
 epsagon.identify({
-  userId: '7128f1a08a95e46c', 
-  userName: 'John Doe', 
+  userId: '7128f1a08a95e46c',
+  userName: 'John Doe',
   userEmail: 'john@doe.com',
-  companyId: 'fcffa7328813e4', 
+  companyId: 'fcffa7328813e4',
   companyName: 'Epsagon'
 })
 
@@ -79,6 +81,7 @@ Advanced options can be configured as a parameter to the init() method.
 |isEpsagonDisabled       |Boolean|`false`       |A flag to completely disable Epsagon (can be used for tests or locally)         |
 |epsagonDebug       |Boolean|`false`       |Enable debug prints for troubleshooting. Note: if this flag is true, this will override the logLevel|
 |logLevel       |String|`INFO`       |The default Log level. Could be one of: ```DEBUG```, ```INFO```, ```WARN```, ```ERROR```, ```ALL```.|
+|errorDisabled      |Boolean|`false`      |Disables collection of errors while still sending traces                             |
 
 
 ### Trace Header Propagation
@@ -91,7 +94,7 @@ epsagon.init({
   token: 'epsagon-token',
   appName: 'app-name-stage',
   propagateTraceHeaderUrls: ['localhost', 'sub.example.com'],
-  urlPatternsToIgnore: [".*example.*", ".*abc.*"]  
+  urlPatternsToIgnore: [".*example.*", ".*abc.*"]
 })
 ```
 

@@ -6,7 +6,6 @@ const chai = require('chai');
 const sinon = require('sinon');
 const helper = require('./helper');
 
-helper.browserenv();
 const sandbox = sinon.createSandbox();
 
 const entries = {
@@ -35,6 +34,10 @@ const entries = {
 let spyEntries;
 let spyExporter;
 describe('docload instrumentation', () => {
+  before(() => {
+    helper.browserenv({errorDisabled: false});
+  });
+
   beforeEach(() => {
     Object.defineProperty(global.window.document, 'readyState', {
       writable: true,
