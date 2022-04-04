@@ -11,10 +11,14 @@ class Request {
   }
 }
 
+const defaults = {
+  errorDisabled: false
+};
+
 /**
  *  Simulate browser environment for nodejs.
  */
-module.exports.browserenv = function () {
+module.exports.browserenv = function (options = defaults) {
   const cfg = { url: 'http://localhost' };
   const dom = new JSDOM('', cfg);
   global.window = dom.window;
@@ -55,7 +59,12 @@ module.exports.browserenv = function () {
 
   globalThis.Request = Request;
 
-  const res = epsagon.init({ token: 'dfsaf', isTest: true });
+  let initArgs = {
+    ...{ token: 'dfsaf', isTest: true },
+    ...options
+  };
+
+  const res = epsagon.init(initArgs);
   return res.epsSpan;
 };
 

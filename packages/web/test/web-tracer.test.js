@@ -8,6 +8,12 @@ before(helper.browserenv);
 const appName = 'test app';
 
 describe('init tests', () => {
+  const sandbox = sinon.createSandbox();
+
+  afterEach(function() {
+    sandbox.restore();
+  });
+
   it('init function exists', (done) => {
     chai.expect(typeof epsagon.init === 'function').to.equal(true);
     done();
