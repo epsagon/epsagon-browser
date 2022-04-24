@@ -113,7 +113,7 @@ class EpsagonFetchInstrumentation extends FetchInstrumentation {
           diag.debug('After add headers: url: ', url , 'options: ', options);
           plugin._tasksCount += 1;
           return original
-            .apply(this, [url, options])
+            .apply(this, [input, init])
             .catch((ex) => {
               diag.debug(ex);
               diag.debug(JSON.stringify(ex));
