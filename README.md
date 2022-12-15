@@ -17,7 +17,7 @@ This package provides tracing to front end of web applications for the collectio
   - [Custom Tags](#custom-tags)
 - [Configuration](#configuration)
   - [Trace Header Propagation](#trace-header-propagation)
-- [FAQ] (#faq)
+- [FAQ](#faq)
 - [Getting Help](#getting-help)
 - [Opening Issues](#opening-issues)
 - [License](#license)
