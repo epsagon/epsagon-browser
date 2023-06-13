@@ -6,6 +6,8 @@
   <br />
 </p>
 
+> **Note:**  This repository is archived since Epsagon is no longer supported
+
 # Epsagon Tracing for Web
 
 This package provides tracing to front end of web applications for the collection of distributed tracing and performance metrics in [Epsagon](https://app.epsagon.com/?utm_source=github).
